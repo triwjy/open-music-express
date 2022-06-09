@@ -54,6 +54,156 @@ describe('Album routes', () => {
     });
   });
 
+  describe('GET /v1/albums', () => {
+    test('should return 200 and apply the default query options', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 2,
+      });
+      expect(res.body.results).toHaveLength(2);
+      expect(res.body.results[0]).toEqual({
+        id: albumOne._id.toHexString(),
+        songs: [],
+        name: albumOne.name,
+        year: albumOne.year,
+      });
+    });
+
+    test('should correctly apply filter on name field', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ name: albumOne.name }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 1,
+      });
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0].id).toBe(albumOne._id.toHexString());
+    });
+
+    test('should correctly apply filter on year field', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ year: 2001 }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 1,
+      });
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0].id).toBe(albumOne._id.toHexString());
+    });
+
+    test('should correctly sort the returned array if descending sort param is specified', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ sortBy: 'year:desc' }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 2,
+      });
+      expect(res.body.results).toHaveLength(2);
+      expect(res.body.results[0].id).toBe(albumTwo._id.toHexString());
+      expect(res.body.results[1].id).toBe(albumOne._id.toHexString());
+    });
+
+    test('should correctly sort the returned array if ascending sort param is specified', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ sortBy: 'year:asc' }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 2,
+      });
+      expect(res.body.results).toHaveLength(2);
+      expect(res.body.results[0].id).toBe(albumOne._id.toHexString());
+      expect(res.body.results[1].id).toBe(albumTwo._id.toHexString());
+    });
+
+    test('should correctly sort the returned array if multiple sorting criteria are specified', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ sortBy: 'year:desc,name:asc' }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 2,
+      });
+      expect(res.body.results).toHaveLength(2);
+
+      const expectedOrder = [albumOne, albumTwo].sort((a, b) => {
+        if (a.year < b.year) {
+          return 1;
+        }
+        if (a.year > b.year) {
+          return -1;
+        }
+        return a.name < b.name ? -1 : 1;
+      });
+
+      expectedOrder.forEach((album, index) => {
+        expect(res.body.results[index].id).toBe(album._id.toHexString());
+      });
+    });
+
+    test('should limit returned array if limit param is specified', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ limit: 1 }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 1,
+        totalPages: 2,
+        totalResults: 2,
+      });
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0].id).toBe(albumOne._id.toHexString());
+    });
+
+    test('should return the correct page if page and limit params are specified', async () => {
+      await insertAlbums([albumOne, albumTwo]);
+
+      const res = await request(app).get('/v1/albums').query({ page: 2, limit: 1 }).send().expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 2,
+        limit: 1,
+        totalPages: 2,
+        totalResults: 2,
+      });
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0].id).toBe(albumTwo._id.toHexString());
+    });
+  });
+
   describe('GET /v1/albums/:albumId', () => {
     test('should return 200 and the album object if data is ok', async () => {
       await insertAlbums([albumOne]);
