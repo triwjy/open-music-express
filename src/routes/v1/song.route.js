@@ -1,38 +1,37 @@
 const express = require('express');
-const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const userValidation = require('../../validations/user.validation');
-const userController = require('../../controllers/user.controller');
+const songValidation = require('../../validations/song.validation');
+const songController = require('../../controllers/song.controller');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)
-  .get(auth('getUsers'), validate(userValidation.getUsers), userController.getUsers);
+  .post(validate(songValidation.createSong), songController.createSong)
+  .get(validate(songValidation.getSongs), songController.getSongs);
 
 router
-  .route('/:userId')
-  .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
-  .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
-  .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
+  .route('/:songId')
+  .get(validate(songValidation.getSong), songController.getSong)
+  .patch(validate(songValidation.updateSong), songController.updateSong)
+  .delete(validate(songValidation.deleteSong), songController.deleteSong);
 
 module.exports = router;
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: User management and retrieval
+ *   name: Songs
+ *   description: Song resource
  */
 
 /**
  * @swagger
- * /users:
+ * /songs:
  *   post:
- *     summary: Create a user
- *     description: Only admins can create other users.
- *     tags: [Users]
+ *     summary: Create a song
+ *     description: Only signed in user can create a song.
+ *     tags: [Songs]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -42,73 +41,81 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
- *               - name
- *               - email
- *               - password
- *               - role
+ *               - title
+ *               - year
+ *               - genre
+ *               - performer
  *             properties:
- *               name:
+ *               title:
  *                 type: string
- *               email:
+ *               year:
+ *                 type: number
+ *               genre:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
- *               role:
+ *               performer:
  *                  type: string
- *                  enum: [user, admin]
+ *               duration:
+ *                  type: number
+ *               albumId:
+ *                  type: string
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
- *               role: user
+ *               title: Life in Technicolor
+ *               year: 2008
+ *               performer: Coldplay
+ *               genre: Indie
+ *               duration: 120
+ *               albumId: 628f36a883e55f43c2f5dc83
  *     responses:
  *       "201":
  *         description: Created
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
- *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
+ *               $ref: '#/components/schemas/Song'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *
  *   get:
- *     summary: Get all users
- *     description: Only admins can retrieve all users.
- *     tags: [Users]
+ *     summary: Get all songs
+ *     description: All users can retrieve all songs.
+ *     tags: [Songs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: name
+ *         name: title
  *         schema:
  *           type: string
- *         description: User name
+ *         description: Song title
  *       - in: query
- *         name: role
+ *         name: year
+ *         schema:
+ *           type: number
+ *         description: Song release year
+ *       - in: query
+ *         name: genre
  *         schema:
  *           type: string
- *         description: User role
+ *         description: Song genre
+ *       - in: query
+ *         name: performer
+ *         schema:
+ *           type: string
+ *         description: Song performer
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
- *         description: sort by query in the form of field:desc/asc (ex. name:asc)
+ *         description: sort by query in the form of field:desc/asc (ex. year:asc)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           minimum: 1
  *         default: 10
- *         description: Maximum number of users
+ *         description: Maximum number of songs
  *       - in: query
  *         name: page
  *         schema:
@@ -127,7 +134,7 @@ module.exports = router;
  *                 results:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/User'
+ *                     $ref: '#/components/schemas/Song'
  *                 page:
  *                   type: integer
  *                   example: 1
@@ -140,55 +147,43 @@ module.exports = router;
  *                 totalResults:
  *                   type: integer
  *                   example: 1
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
  */
 
 /**
  * @swagger
- * /users/{id}:
+ * /songs/{id}:
  *   get:
- *     summary: Get a user
- *     description: Logged in users can fetch only their own user information. Only admins can fetch other users.
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
+ *     summary: Get a song
+ *     description: Song information.
+ *     tags: [Songs]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
+ *         description: Song id
  *     responses:
  *       "200":
  *         description: OK
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/User'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
+ *               $ref: '#/components/schemas/Song'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
  *   patch:
- *     summary: Update a user
- *     description: Logged in users can only update their own information. Only admins can update other users.
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
+ *     summary: Update a song
+ *     description: Update song resource.
+ *     tags: [Songs]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
+ *         description: Song id
  *     requestBody:
  *       required: true
  *       content:
@@ -196,34 +191,34 @@ module.exports = router;
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               title:
  *                 type: string
- *               email:
+ *               year:
+ *                 type: number
+ *               genre:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
+ *               performer:
  *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
+ *               duration:
+ *                 type: number
+ *               albumId:
+ *                 type: string
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
+ *               title: fake title
+ *               year: 2020
+ *               genre: pop
+ *               performer: fake artist
+ *               duration: 300
+ *               albumId: 628f36a883e55f43c2f5dc83
  *     responses:
  *       "200":
  *         description: OK
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/User'
+ *               $ref: '#/components/schemas/Song'
  *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
+ *         $ref: '#/components/responses/EmptyTitle'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *

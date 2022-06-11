@@ -34,7 +34,7 @@ describe('Album routes', () => {
     });
 
     test('should return 400 error if name is invalid', async () => {
-      newAlbum.email = '';
+      newAlbum.name = '';
 
       const res = await request(app).post('/v1/albums').send(newAlbum).expect(httpStatus.BAD_REQUEST);
       expect(res.body).toEqual({
@@ -231,7 +231,7 @@ describe('Album routes', () => {
   });
 
   describe('PATCH /v1/albums/:albumId', () => {
-    test('should return 200 and successfully update user if data is ok', async () => {
+    test('should return 200 and successfully update song if data is ok', async () => {
       await insertAlbums([albumOne]);
       const updateBody = {
         name: faker.name.findName(),
