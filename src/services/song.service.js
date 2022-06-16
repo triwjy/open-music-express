@@ -8,14 +8,18 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Song>}
  */
 const createSong = async (songBody) => {
-  const { albumId } = songBody;
-  if (albumId) {
-    const album = await Album.findById(albumId);
+  const song = new Song(songBody);
+
+  if (song.albumId) {
+    const album = await Album.findById(song.albumId);
     if (!album) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
     }
+    album.songs.push(song);
+    await album.save();
   }
-  return Song.create(songBody);
+  await song.save();
+  return song;
 };
 
 /**
@@ -52,6 +56,17 @@ const updateSongById = async (songId, updateBody) => {
   if (!song) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Song not found');
   }
+
+  // update case: new album ID is added to song
+  if (updateBody.albumId) {
+    const album = await Album.findById(updateBody.albumId);
+    if (!album) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
+    }
+    album.songs.push(song);
+    await album.save();
+  }
+
   Object.assign(song, updateBody);
   await song.save();
   return song;

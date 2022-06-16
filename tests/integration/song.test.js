@@ -4,8 +4,8 @@ const httpStatus = require('http-status');
 const mongoose = require('mongoose');
 const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
-const { Song } = require('../../src/models');
-const { albumOne, insertAlbums } = require('../fixtures/album.fixture');
+const { Song, Album } = require('../../src/models');
+const { albumOne, insertAlbums, albumTwo } = require('../fixtures/album.fixture');
 const { insertSongs, songOne, songTwo, songThree } = require('../fixtures/song.fixture');
 
 setupTestDB();
@@ -57,6 +57,10 @@ describe('Song routes', () => {
         duration: newSong.duration,
         albumId: albumOne._id.toHexString(),
       });
+
+      // add song to album-songs
+      const dbAlbum = await Album.findById(albumOne._id).populate('songs', 'title');
+      expect(dbAlbum.songs[0].title).toBe(newSong.title);
     });
 
     test('should return 201 and successfully create new song if data is ok and without album Id', async () => {
@@ -366,11 +370,13 @@ describe('Song routes', () => {
 
   describe('PATCH /v1/songs/:songId', () => {
     test('should return 200 and successfully update song if data is ok', async () => {
+      await insertAlbums([albumOne]);
       await insertSongs([songOne]);
 
       const updateBody = {
         title: faker.name.findName(),
         year: 2020,
+        albumId: albumOne._id,
       };
 
       const res = await request(app).patch(`/v1/songs/${songOne._id}`).send(updateBody).expect(httpStatus.OK);
@@ -388,6 +394,9 @@ describe('Song routes', () => {
       const dbSong = await Song.findById(songOne._id);
       expect(dbSong).toBeDefined();
       expect(dbSong).toMatchObject({ title: updateBody.title, year: updateBody.year });
+
+      const dbAlbum = await Album.findById(albumOne._id);
+      expect(dbAlbum.songs[0]._id).toEqual(songOne._id);
     });
 
     test('should return 404 if updating song that is not found', async () => {
@@ -416,6 +425,14 @@ describe('Song routes', () => {
       const updateBody = { year: 'abcd' };
 
       await request(app).patch(`/v1/songs/${songOne._id}`).send(updateBody).expect(httpStatus.BAD_REQUEST);
+    });
+
+    test('should return 404 if updating with invalid album id', async () => {
+      await insertAlbums([albumOne]);
+      await insertSongs([songOne]);
+      const updateBody = { albumId: albumTwo._id };
+
+      await request(app).patch(`/v1/songs/${songOne._id}`).send(updateBody).expect(httpStatus.NOT_FOUND);
     });
   });
 
