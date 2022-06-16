@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Album } = require('../models');
+const { Album, Song } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -27,11 +27,11 @@ const queryAlbums = async (filter, options) => {
 
 /**
  * Get album by id
- * @param {AlbumId} id
+ * @param {ObjectId} albumId
  * @returns {Promise<Album>}
  */
-const getAlbumById = async (id) => {
-  return Album.findById(id);
+const getAlbumById = async (albumId) => {
+  return Album.findById(albumId).populate('songs');
 };
 
 /**
@@ -69,6 +69,10 @@ const deleteAlbumById = async (albumId) => {
   if (!album) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
   }
+
+  // delete albumId field from associated song
+  await Song.updateMany({ albumId }, { albumId: null });
+
   await album.remove();
   return album;
 };

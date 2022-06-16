@@ -82,6 +82,10 @@ const deleteSongById = async (songId) => {
   if (!song) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Song not found');
   }
+  if (song.albumId) {
+    await Album.updateOne({ _id: song.albumId }, { $pull: { songs: song._id } });
+  }
+
   await song.remove();
   return song;
 };

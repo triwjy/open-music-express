@@ -302,5 +302,25 @@ describe('Album routes', () => {
 
       await request(app).delete(`/v1/albums/${albumTwo._id}`).send().expect(httpStatus.NOT_FOUND);
     });
+
+    test('should remove albumId from associated song', async () => {
+      await insertAlbums(albumOne);
+
+      const newSong = {
+        title: faker.name.findName(),
+        year: 2001,
+        genre: faker.music.genre(),
+        performer: faker.name.findName(),
+        duration: Math.floor(Math.random() * 20) + 180,
+        albumId: albumOne._id,
+      };
+      let songRes = await request(app).post('/v1/songs').send(newSong);
+      expect(songRes.body.albumId).toEqual(albumOne._id.toHexString());
+
+      await request(app).delete(`/v1/albums/${albumOne._id}`).send().expect(httpStatus.NO_CONTENT);
+
+      songRes = await request(app).get(`/v1/songs/${songRes.body.id}`);
+      expect(songRes.body.albumId).toBeNull();
+    });
   });
 });
