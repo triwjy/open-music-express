@@ -5,7 +5,7 @@ const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
 const { Album } = require('../../src/models');
 const { insertAlbums, albumOne, albumTwo } = require('../fixtures/album.fixture');
-const { adminAccessToken } = require('../fixtures/token.fixture');
+const { adminAccessToken, userOneAccessToken } = require('../fixtures/token.fixture');
 const { insertUsers, admin } = require('../fixtures/user.fixture');
 
 setupTestDB();
@@ -14,7 +14,8 @@ describe('Album routes', () => {
   describe('POST /v1/albums', () => {
     let newAlbum;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      await insertUsers([admin]);
       newAlbum = {
         name: faker.name.findName(),
         year: 2000,
@@ -22,7 +23,11 @@ describe('Album routes', () => {
     });
 
     test('should return 201 and successfully create new album if data is ok', async () => {
-      const res = await request(app).post('/v1/albums').send(newAlbum).expect(httpStatus.CREATED);
+      const res = await request(app)
+        .post('/v1/albums')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(newAlbum)
+        .expect(httpStatus.CREATED);
       expect(res.body).toEqual({
         id: expect.any(String),
         songs: [],
@@ -38,7 +43,11 @@ describe('Album routes', () => {
     test('should return 400 error if name is invalid', async () => {
       newAlbum.name = '';
 
-      const res = await request(app).post('/v1/albums').send(newAlbum).expect(httpStatus.BAD_REQUEST);
+      const res = await request(app)
+        .post('/v1/albums')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(newAlbum)
+        .expect(httpStatus.BAD_REQUEST);
       expect(res.body).toEqual({
         code: 400,
         message: expect.any(String),
@@ -48,11 +57,27 @@ describe('Album routes', () => {
     test('should return 400 error if year is invalid', async () => {
       newAlbum.year = 'abc';
 
-      const res = await request(app).post('/v1/albums').send(newAlbum).expect(httpStatus.BAD_REQUEST);
+      const res = await request(app)
+        .post('/v1/albums')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(newAlbum)
+        .expect(httpStatus.BAD_REQUEST);
       expect(res.body).toEqual({
         code: 400,
         message: expect.any(String),
       });
+    });
+
+    test('should return 401 error if no access token is given', async () => {
+      await request(app).post('/v1/albums').send(newAlbum).expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 401 error if wrong access token is given', async () => {
+      await request(app)
+        .post('/v1/albums')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(newAlbum)
+        .expect(httpStatus.UNAUTHORIZED);
     });
   });
 
@@ -233,14 +258,20 @@ describe('Album routes', () => {
   });
 
   describe('PATCH /v1/albums/:albumId', () => {
+    beforeEach(async () => {
+      await Promise.all([insertAlbums([albumOne]), insertUsers([admin])]);
+    });
     test('should return 200 and successfully update song if data is ok', async () => {
-      await insertAlbums([albumOne]);
       const updateBody = {
         name: faker.name.findName(),
         year: 2020,
       };
 
-      const res = await request(app).patch(`/v1/albums/${albumOne._id}`).send(updateBody).expect(httpStatus.OK);
+      const res = await request(app)
+        .patch(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.OK);
 
       expect(res.body).toEqual({
         id: albumOne._id.toHexString(),
@@ -254,61 +285,113 @@ describe('Album routes', () => {
       expect(dbAlbum).toMatchObject({ name: updateBody.name, year: updateBody.year });
     });
 
+    test('should return 401 error if no access token is given', async () => {
+      const updateBody = {
+        name: faker.name.findName(),
+        year: 2020,
+      };
+
+      await request(app).patch(`/v1/albums/${albumOne._id}`).send(updateBody).expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 401 error if wrong access token is given', async () => {
+      const updateBody = {
+        name: faker.name.findName(),
+        year: 2020,
+      };
+
+      await request(app)
+        .patch(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.UNAUTHORIZED);
+    });
+
     test('should return 404 if updating album that is not found', async () => {
-      await insertAlbums([albumOne]);
       const updateBody = { name: faker.name.findName() };
 
-      await request(app).patch(`/v1/albums/${albumTwo._id}`).send(updateBody).expect(httpStatus.NOT_FOUND);
+      await request(app)
+        .patch(`/v1/albums/${albumTwo._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.NOT_FOUND);
     });
 
     test('should return 400 error if albumId is not a valid mongo id', async () => {
-      await insertAlbums([albumOne]);
       const updateBody = { name: faker.name.findName() };
 
-      await request(app).patch(`/v1/albums/invalidId`).send(updateBody).expect(httpStatus.BAD_REQUEST);
+      await request(app)
+        .patch(`/v1/albums/invalidId`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 400 if name is invalid', async () => {
-      await insertAlbums([albumOne]);
       const updateBody = { name: '' };
 
-      await request(app).patch(`/v1/albums/${albumOne._id}`).send(updateBody).expect(httpStatus.BAD_REQUEST);
+      await request(app)
+        .patch(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 400 if year is invalid', async () => {
-      await insertAlbums([albumOne]);
       const updateBody = { year: 'abcd' };
 
-      await request(app).patch(`/v1/albums/${albumOne._id}`).send(updateBody).expect(httpStatus.BAD_REQUEST);
+      await request(app)
+        .patch(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
     });
   });
 
   describe('DELETE /v1/albums/:albumId', () => {
+    beforeEach(async () => {
+      await Promise.all([insertAlbums([albumOne]), insertUsers([admin])]);
+    });
     test('should return 204 if data is ok', async () => {
-      await insertAlbums([albumOne]);
-
-      await request(app).delete(`/v1/albums/${albumOne._id}`).send().expect(httpStatus.NO_CONTENT);
+      await request(app)
+        .delete(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.NO_CONTENT);
 
       const dbAlbum = await Album.findById(albumOne._id);
       expect(dbAlbum).toBeNull();
     });
 
-    test('should return 400 error if albumId is not a valid mongo id', async () => {
-      await insertAlbums([albumOne]);
+    test('should return 401 error if no access token is given', async () => {
+      await request(app).delete(`/v1/albums/${albumOne._id}`).send().expect(httpStatus.UNAUTHORIZED);
+    });
 
-      await request(app).delete('/v1/albums/invalidId').send().expect(httpStatus.BAD_REQUEST);
+    test('should return 401 error if no wrong access token is given', async () => {
+      await request(app)
+        .delete(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 400 error if albumId is not a valid mongo id', async () => {
+      await request(app)
+        .delete('/v1/albums/invalidId')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 404 error if album already is not found', async () => {
-      await insertAlbums([albumOne]);
-
-      await request(app).delete(`/v1/albums/${albumTwo._id}`).send().expect(httpStatus.NOT_FOUND);
+      await request(app)
+        .delete(`/v1/albums/${albumTwo._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.NOT_FOUND);
     });
 
     test('should remove albumId from associated song', async () => {
-      await insertAlbums([albumOne]);
-      await insertUsers([admin]);
-
       const newSong = {
         title: faker.name.findName(),
         year: 2001,
@@ -320,7 +403,11 @@ describe('Album routes', () => {
       let songRes = await request(app).post('/v1/songs').set('Authorization', `Bearer ${adminAccessToken}`).send(newSong);
       expect(songRes.body.albumId).toEqual(albumOne._id.toHexString());
 
-      await request(app).delete(`/v1/albums/${albumOne._id}`).send().expect(httpStatus.NO_CONTENT);
+      await request(app)
+        .delete(`/v1/albums/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.NO_CONTENT);
 
       songRes = await request(app).get(`/v1/songs/${songRes.body.id}`);
       expect(songRes.body.albumId).toBeNull();

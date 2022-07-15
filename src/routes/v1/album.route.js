@@ -3,19 +3,20 @@ const express = require('express');
 const validate = require('../../middlewares/validate');
 const albumValidation = require('../../validations/album.validation');
 const albumController = require('../../controllers/album.controller');
+const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(validate(albumValidation.createAlbum), albumController.createAlbum)
+  .post(auth('manageAlbums'), validate(albumValidation.createAlbum), albumController.createAlbum)
   .get(validate(albumValidation.getAlbum), albumController.getAlbums);
 
 router
   .route('/:albumId')
   .get(validate(albumValidation.getAlbum), albumController.getAlbum)
-  .patch(validate(albumValidation.updateAlbum), albumController.updateAlbum)
-  .delete(validate(albumValidation.deleteAlbum), albumController.deleteAlbum);
+  .patch(auth('manageAlbums'), validate(albumValidation.updateAlbum), albumController.updateAlbum)
+  .delete(auth('manageAlbums'), validate(albumValidation.deleteAlbum), albumController.deleteAlbum);
 
 module.exports = router;
 

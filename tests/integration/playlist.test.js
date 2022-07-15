@@ -186,8 +186,7 @@ describe('Playlist routes', () => {
 
   describe('GET /v1/playlists/:playlistId/songs', () => {
     beforeEach(async () => {
-      await insertUsers([userOne]);
-      await insertPlaylists([playlistOne]);
+      await Promise.all([insertUsers([userOne]), insertPlaylists([playlistOne])]);
     });
     test('should return 200 and the playlist object with song list if data is ok', async () => {
       await insertSongs([songOne]);
@@ -239,9 +238,7 @@ describe('Playlist routes', () => {
 
   describe('POST /v1/playlists/:playlistId/songs', () => {
     beforeEach(async () => {
-      await insertUsers([userOne]);
-      await insertPlaylists([playlistOne]);
-      await insertSongs([songOne]);
+      await Promise.all([insertUsers([userOne]), insertPlaylists([playlistOne]), insertSongs([songOne])]);
     });
     test('should return 201 and successfully add song to playlist and log activities if data is ok', async () => {
       const res = await request(app)
@@ -294,9 +291,7 @@ describe('Playlist routes', () => {
 
   describe('DELETE /v1/playlists/:playlistId/songs', () => {
     beforeEach(async () => {
-      await insertUsers([userOne]);
-      await insertPlaylists([playlistOne]);
-      await insertSongs([songOne]);
+      await Promise.all([insertUsers([userOne]), insertPlaylists([playlistOne]), insertSongs([songOne])]);
 
       // insert songOne to playlistOne
       await request(app)
