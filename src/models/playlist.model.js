@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const PlaylistActivity = require('./playlistActivity.model');
 const { toJSON, paginate } = require('./plugins');
 const Song = require('./song.model');
 const User = require('./user.model');
@@ -29,26 +30,8 @@ const playlistSchema = mongoose.Schema(
     ],
     activities: [
       {
-        type: new mongoose.Schema(
-          {
-            collaboratorId: {
-              type: mongoose.Schema.Types.ObjectId,
-              required: true,
-            },
-            songId: {
-              type: mongoose.Schema.Types.ObjectId,
-              required: true,
-            },
-            action: {
-              type: String,
-              enum: ['add', 'delete'],
-              required: true,
-            },
-          },
-          {
-            timestamps: true,
-          }
-        ),
+        type: mongoose.Schema.Types.ObjectId,
+        ref: PlaylistActivity,
       },
     ],
   },
