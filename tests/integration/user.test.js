@@ -23,13 +23,9 @@ describe('User routes', () => {
     });
 
     test('should return 201 and successfully create new user if data is ok', async () => {
-      await insertUsers([admin]);
+      await insertUsers([userOne]);
 
-      const res = await request(app)
-        .post('/v1/users')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(newUser)
-        .expect(httpStatus.CREATED);
+      const res = await request(app).post('/v1/users').send(newUser).expect(httpStatus.CREATED);
 
       expect(res.body).not.toHaveProperty('password');
       expect(res.body).toEqual({
@@ -44,36 +40,6 @@ describe('User routes', () => {
       expect(dbUser).toBeDefined();
       expect(dbUser.password).not.toBe(newUser.password);
       expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email, role: newUser.role, isEmailVerified: false });
-    });
-
-    test('should be able to create an admin as well', async () => {
-      await insertUsers([admin]);
-      newUser.role = 'admin';
-
-      const res = await request(app)
-        .post('/v1/users')
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .send(newUser)
-        .expect(httpStatus.CREATED);
-
-      expect(res.body.role).toBe('admin');
-
-      const dbUser = await User.findById(res.body.id);
-      expect(dbUser.role).toBe('admin');
-    });
-
-    test('should return 401 error if access token is missing', async () => {
-      await request(app).post('/v1/users').send(newUser).expect(httpStatus.UNAUTHORIZED);
-    });
-
-    test('should return 403 error if logged in user is not admin', async () => {
-      await insertUsers([userOne]);
-
-      await request(app)
-        .post('/v1/users')
-        .set('Authorization', `Bearer ${userOneAccessToken}`)
-        .send(newUser)
-        .expect(httpStatus.FORBIDDEN);
     });
 
     test('should return 400 error if email is invalid', async () => {
