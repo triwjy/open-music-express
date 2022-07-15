@@ -5,6 +5,8 @@ const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
 const { Album } = require('../../src/models');
 const { insertAlbums, albumOne, albumTwo } = require('../fixtures/album.fixture');
+const { adminAccessToken } = require('../fixtures/token.fixture');
+const { insertUsers, admin } = require('../fixtures/user.fixture');
 
 setupTestDB();
 
@@ -304,7 +306,8 @@ describe('Album routes', () => {
     });
 
     test('should remove albumId from associated song', async () => {
-      await insertAlbums(albumOne);
+      await insertAlbums([albumOne]);
+      await insertUsers([admin]);
 
       const newSong = {
         title: faker.name.findName(),
@@ -314,7 +317,7 @@ describe('Album routes', () => {
         duration: Math.floor(Math.random() * 20) + 180,
         albumId: albumOne._id,
       };
-      let songRes = await request(app).post('/v1/songs').send(newSong);
+      let songRes = await request(app).post('/v1/songs').set('Authorization', `Bearer ${adminAccessToken}`).send(newSong);
       expect(songRes.body.albumId).toEqual(albumOne._id.toHexString());
 
       await request(app).delete(`/v1/albums/${albumOne._id}`).send().expect(httpStatus.NO_CONTENT);

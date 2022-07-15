@@ -2,19 +2,19 @@ const express = require('express');
 const validate = require('../../middlewares/validate');
 const songValidation = require('../../validations/song.validation');
 const songController = require('../../controllers/song.controller');
+const auth = require('../../middlewares/auth');
 
 const router = express.Router();
-
 router
   .route('/')
-  .post(validate(songValidation.createSong), songController.createSong)
+  .post(auth('manageSongs'), validate(songValidation.createSong), songController.createSong)
   .get(validate(songValidation.getSongs), songController.getSongs);
 
 router
   .route('/:songId')
   .get(validate(songValidation.getSong), songController.getSong)
-  .patch(validate(songValidation.updateSong), songController.updateSong)
-  .delete(validate(songValidation.deleteSong), songController.deleteSong);
+  .patch(auth('manageSongs'), validate(songValidation.updateSong), songController.updateSong)
+  .delete(auth('manageSongs'), validate(songValidation.deleteSong), songController.deleteSong);
 
 module.exports = router;
 
