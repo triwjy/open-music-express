@@ -453,13 +453,27 @@ describe('Song routes', () => {
       expect(dbAlbum.songs[0]._id).toEqual(songOne._id);
     });
 
-    test('should return 404 if updating song that is not found', async () => {
+    test('should return 404 errro if updating song that is not found', async () => {
       const updateBody = { title: faker.name.findName() };
 
       await request(app)
         .patch(`/v1/songs/${songTwo._id}`)
         .send(updateBody)
         .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(httpStatus.NOT_FOUND);
+    });
+
+    test('should return 404 error if updating song into non-existing album', async () => {
+      const updateBody = {
+        title: faker.name.findName(),
+        year: 2020,
+        albumId: songOne._id,
+      };
+
+      await request(app)
+        .patch(`/v1/songs/${songOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(updateBody)
         .expect(httpStatus.NOT_FOUND);
     });
 
@@ -582,17 +596,17 @@ describe('Song routes', () => {
         albumId: albumOne._id,
       };
       const songRes = await request(app).post('/v1/songs').set('Authorization', `Bearer ${adminAccessToken}`).send(newSong);
-      let albumRes = await request(app).get(`/v1/albums/${albumOne._id}`);
-      expect(albumRes.body.songs.length).toEqual(1);
-      expect(albumRes.body.songs[0].id).toEqual(songRes.body.id);
+      let albumDb = await Album.findById(albumOne._id);
+      expect(albumDb.songs).toHaveLength(1);
+      expect(albumDb.songs[0]._id.toString()).toEqual(songRes.body.id);
       await request(app)
         .delete(`/v1/songs/${songRes.body.id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send()
         .expect(httpStatus.NO_CONTENT);
 
-      albumRes = await request(app).get(`/v1/albums/${albumOne._id}`);
-      expect(albumRes.body.songs.length).toEqual(0);
+      albumDb = await Album.findById(albumOne._id);
+      expect(albumDb.songs).toHaveLength(0);
     });
   });
 });

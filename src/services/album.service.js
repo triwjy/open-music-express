@@ -35,15 +35,6 @@ const getAlbumById = async (albumId) => {
 };
 
 /**
- * Get album by year
- * @param {string} year
- * @returns {Promise<Album>}
- */
-const getAlbumByYear = async (year) => {
-  return Album.findAll({ year });
-};
-
-/**
  * Update album by id
  * @param {ObjectId} albumId
  * @param {Object} updateBody
@@ -81,7 +72,6 @@ module.exports = {
   createAlbum,
   queryAlbums,
   getAlbumById,
-  getAlbumByYear,
   updateAlbumById,
   deleteAlbumById,
 };

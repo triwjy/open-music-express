@@ -7,8 +7,8 @@ const { isPlaylistOwner } = require('../services/playlist.service');
 
 // add a playlist of a user
 const createPlaylist = catchAsync(async (req, res) => {
-  const ownerId = req.user._id;
-  const result = await playlistService.createPlaylist(req.body, ownerId);
+  const owner = req.user;
+  const result = await playlistService.createPlaylist(req.body, owner);
   res.status(httpStatus.CREATED).send(result);
 });
 

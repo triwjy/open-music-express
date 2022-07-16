@@ -15,14 +15,14 @@ describe('Playlist routes', () => {
   describe('POST /v1/playlists/', () => {
     let newPlaylistBody;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      await insertUsers([userOne]);
       newPlaylistBody = {
         name: faker.name.findName(),
       };
     });
 
     test('should return 201 and successfully create new playlist if data is ok', async () => {
-      await insertUsers([userOne]);
       const res = await request(app)
         .post('/v1/playlists')
         .set('Authorization', `Bearer ${userOneAccessToken}`)
@@ -55,8 +55,24 @@ describe('Playlist routes', () => {
       expect(dbPlaylist.activities).toHaveLength(0);
     });
 
+    test('should return 400 error if bad request body is provided', async () => {
+      await request(app)
+        .post('/v1/playlists')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.BAD_REQUEST);
+    });
+
     test('should return 401 error if access token is missing', async () => {
       await request(app).post('/v1/playlists').send(newPlaylistBody).expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 401 error if owner Id is not registered user Id', async () => {
+      await request(app)
+        .post('/v1/playlists')
+        .set('Authorization', `Bearer ${userTwoAccessToken}`)
+        .send(newPlaylistBody)
+        .expect(httpStatus.UNAUTHORIZED);
     });
   });
 
@@ -184,6 +200,42 @@ describe('Playlist routes', () => {
     });
   });
 
+  describe('DELETE /v1/playlists/:playlistId', () => {
+    beforeEach(async () => {
+      await Promise.all([insertUsers([userOne, userTwo]), insertPlaylists([playlistOne])]);
+    });
+    test('should return 204 if data is ok', async () => {
+      await request(app)
+        .delete(`/v1/playlists/${playlistOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.NO_CONTENT);
+
+      const dbPlaylist = await Playlist.findById(playlistOne._id);
+      expect(dbPlaylist).toBeNull();
+    });
+
+    test('should return 401 error if access token is missing', async () => {
+      await request(app).delete(`/v1/playlists/${playlistOne._id}`).send().expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 404 error if user trying to delete playlist he doesnt have', async () => {
+      await request(app)
+        .delete(`/v1/playlists/${playlistOne._id}`)
+        .set('Authorization', `Bearer ${userTwoAccessToken}`)
+        .send()
+        .expect(httpStatus.NOT_FOUND);
+    });
+
+    test('should return 400 error if playlistId is not a valid mongo id', async () => {
+      await request(app)
+        .delete(`/v1/playlists/invalidId`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.BAD_REQUEST);
+    });
+  });
+
   describe('GET /v1/playlists/:playlistId/songs', () => {
     beforeEach(async () => {
       await Promise.all([insertUsers([userOne]), insertPlaylists([playlistOne])]);
@@ -215,6 +267,14 @@ describe('Playlist routes', () => {
 
     test('should return 401 error is access token is missing', async () => {
       await request(app).get(`/v1/playlists/${playlistOne._id}/songs`).send().expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 404 error if user trying to get playlist thats not exist in db', async () => {
+      await request(app)
+        .get(`/v1/playlists/${playlistTwo._id}/songs`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.NOT_FOUND);
     });
 
     test('should return 404 error is user is trying to get playlist that he doesnt have access to', async () => {
@@ -270,7 +330,7 @@ describe('Playlist routes', () => {
         .expect(httpStatus.UNAUTHORIZED);
     });
 
-    test('should return 404 if user trying to insert songs into playlist he doesnt have access to', async () => {
+    test('should return 404 error if user trying to insert songs into playlist he doesnt have access to', async () => {
       await insertUsers([userTwo]);
 
       await request(app)
@@ -280,7 +340,15 @@ describe('Playlist routes', () => {
         .expect(httpStatus.NOT_FOUND);
     });
 
-    test('should return 400 if songId is invalid', async () => {
+    test('should return 404 error if user trying to insert song not exist in db', async () => {
+      await request(app)
+        .post(`/v1/playlists/${playlistOne._id}/songs`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send({ songId: songTwo._id })
+        .expect(httpStatus.NOT_FOUND);
+    });
+
+    test('should return 400 error if songId is invalid', async () => {
       await request(app)
         .post(`/v1/playlists/${playlistOne._id}/songs`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
@@ -408,11 +476,19 @@ describe('Playlist routes', () => {
         .expect(httpStatus.FORBIDDEN);
     });
 
-    test('should return 404 error if user trying to add not collaborator to non-existing playlist', async () => {
+    test('should return 404 error if user trying to add collaborator to non-existing playlist', async () => {
       await request(app)
-        .post(`/v1/playlists/${songOne._id}/collaborations`)
+        .post(`/v1/playlists/${playlistThree._id}/collaborations`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send({ collaboratorId: userTwo._id })
+        .expect(httpStatus.NOT_FOUND);
+    });
+
+    test('should return 404 error if user trying to add non-existing collaborator to a playlist', async () => {
+      await request(app)
+        .post(`/v1/playlists/${playlistOne._id}/collaborations`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send({ collaboratorId: songOne._id })
         .expect(httpStatus.NOT_FOUND);
     });
   });
@@ -481,6 +557,14 @@ describe('Playlist routes', () => {
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send({ collaboratorId: userTwo._id })
         .expect(httpStatus.NOT_FOUND);
+    });
+
+    test('should return 404 error if collaborator is not found', async () => {
+      await request(app)
+        .delete(`/v1/playlists/${playlistOne._id}/collaborations`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send({ collaboratorId: songOne._id })
+        .expect(httpStatus.OK);
     });
   });
 

@@ -11,7 +11,7 @@ router
   .post(auth(), validate(playlistValidation.createPlaylist), playlistController.createPlaylist)
   .get(auth(), validate(playlistValidation.getPlaylists), playlistController.getPlaylist);
 
-router.route('/:playlistId').delete(auth(), playlistController.deletePlaylist);
+router.route('/:playlistId').delete(auth(), validate(playlistValidation.deletePlaylist), playlistController.deletePlaylist);
 
 router
   .route('/:playlistId/songs')

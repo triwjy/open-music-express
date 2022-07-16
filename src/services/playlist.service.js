@@ -9,11 +9,7 @@ const ApiError = require('../utils/ApiError');
  * @param {ObjectId} ownerId
  * @returns {Promise<Playlist>}
  */
-const createPlaylist = async (body, ownerId) => {
-  const owner = await User.findById(ownerId);
-  if (!owner) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+const createPlaylist = async (body, owner) => {
   const playlist = new Playlist({
     name: body.name,
     owner,
@@ -31,15 +27,6 @@ const createPlaylist = async (body, ownerId) => {
 const queryPlaylists = async (collaboratorId, filter, options) => {
   const playlists = await Playlist.paginate({ collaborators: collaboratorId, ...filter }, options);
   return playlists;
-};
-
-/**
- * Get playlist by id
- * @param {ObjectId} id
- * @returns {Promise<Playlist>}
- */
-const getPlaylistById = async (id) => {
-  return Playlist.findById(id);
 };
 
 /**
@@ -164,10 +151,7 @@ const deleteSongFromPlaylist = async (playlistId, songId, collaboratorId) => {
  * @returns {Promise<Playlist>}
  */
 const addCollaboratorToPlaylist = async (playlistId, collaboratorId) => {
-  const playlist = await getPlaylistById(playlistId);
-  if (!playlist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
-  }
+  const playlist = await Playlist.findById(playlistId);
 
   const collaborator = await User.findById(collaboratorId);
   if (!collaborator) {
@@ -186,10 +170,7 @@ const addCollaboratorToPlaylist = async (playlistId, collaboratorId) => {
  * @returns {Promise<Playlist>}
  */
 const removeCollaboratorFromPlaylist = async (playlistId, collaboratorId) => {
-  const playlist = await getPlaylistById(playlistId);
-  if (!playlist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
-  }
+  const playlist = await Playlist.findById(playlistId);
 
   playlist.collaborators.pull(collaboratorId);
   await playlist.save();
@@ -224,10 +205,6 @@ const isPlaylistOwner = async (playlistId, ownerId) => {
  * @returns {Promise<QueryResult>}
  */
 const queryPlaylistActivities = async (playlistId, filter, options) => {
-  const playlist = await Playlist.findById(playlistId).populate('activities');
-  if (!playlist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
-  }
   const activities = await PlaylistActivity.paginate(filter, options);
   // const activities = await PlaylistActivity.find({ playlist: playlistId }).populate('song');
   return activities;
@@ -237,7 +214,6 @@ module.exports = {
   createPlaylist,
   queryPlaylists,
   deletePlaylist,
-  getPlaylistById,
   addSongToPlaylist,
   getSongsFromPlaylist,
   deleteSongFromPlaylist,
