@@ -5,3 +5,4 @@ module.exports.userService = require('./user.service');
 module.exports.albumService = require('./album.service');
 module.exports.songService = require('./song.service');
 module.exports.playlistService = require('./playlist.service');
+module.exports.amqpProducerService = require('./rabbitmq/amqpProducer.service');

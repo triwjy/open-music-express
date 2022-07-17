@@ -5,6 +5,7 @@ const albumRoute = require('./album.route');
 const songRoute = require('./song.route');
 const docsRoute = require('./docs.route');
 const playlistRoute = require('./playlist.route');
+const exportRoute = require('./export.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -29,6 +30,10 @@ const defaultRoutes = [
   {
     path: '/playlists',
     route: playlistRoute,
+  },
+  {
+    path: '/exports',
+    route: exportRoute,
   },
 ];
 

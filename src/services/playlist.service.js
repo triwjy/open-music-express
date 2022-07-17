@@ -178,7 +178,7 @@ const removeCollaboratorFromPlaylist = async (playlistId, collaboratorId) => {
 };
 
 /**
- * Verify the owner of the playlist
+ * Verify the owner (creator) of the playlist
  * @param {ObjectId} playlistId
  * @param {ObjectId} ownerId
  * @returns {Promise<Boolean>}
@@ -189,6 +189,23 @@ const isPlaylistOwner = async (playlistId, ownerId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
   }
   if (playlist.owner.toString() === ownerId.toString()) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Verify the collaborator of the playlist
+ * @param {ObjectId} playlistId
+ * @param {ObjectId} collaboratorId
+ * @returns {Promise<Boolean>}
+ */
+const isPlaylistCollaborator = async (playlistId, collaboratorId) => {
+  const playlist = await Playlist.findById(playlistId);
+  if (!playlist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
+  }
+  if (playlist.collaborators.includes(collaboratorId)) {
     return true;
   }
   return false;
@@ -220,5 +237,6 @@ module.exports = {
   addCollaboratorToPlaylist,
   removeCollaboratorFromPlaylist,
   isPlaylistOwner,
+  isPlaylistCollaborator,
   queryPlaylistActivities,
 };
