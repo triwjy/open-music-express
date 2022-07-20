@@ -15,7 +15,7 @@ const exportPlaylist = catchAsync(async (req, res) => {
   }
 
   const message = {
-    userId: collaboratorId,
+    playlistId,
     targetEmail,
   };
 
