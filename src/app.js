@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const xss = require('xss-clean');
@@ -20,6 +21,9 @@ if (config.env !== 'test') {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
+
+// serve upload cover album
+app.use(express.static(path.join(__dirname, 'uploads', 'albumCover')));
 
 // set security HTTP headers
 app.use(helmet());

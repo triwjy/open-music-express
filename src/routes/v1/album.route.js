@@ -4,6 +4,7 @@ const validate = require('../../middlewares/validate');
 const albumValidation = require('../../validations/album.validation');
 const albumController = require('../../controllers/album.controller');
 const auth = require('../../middlewares/auth');
+const { uploadAlbumCoverMw } = require('../../middlewares/multer');
 
 const router = express.Router();
 
@@ -17,6 +18,15 @@ router
   .get(validate(albumValidation.getAlbum), albumController.getAlbum)
   .patch(auth('manageAlbums'), validate(albumValidation.updateAlbum), albumController.updateAlbum)
   .delete(auth('manageAlbums'), validate(albumValidation.deleteAlbum), albumController.deleteAlbum);
+
+router
+  .route('/upload-cover/:albumId')
+  .post(
+    auth('manageAlbums'),
+    validate(albumValidation.uploadAlbumCover),
+    uploadAlbumCoverMw,
+    albumController.uploadAlbumCover
+  );
 
 module.exports = router;
 

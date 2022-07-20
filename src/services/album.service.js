@@ -68,10 +68,27 @@ const deleteAlbumById = async (albumId) => {
   return album;
 };
 
+/**
+ * Upload album cover image to an album
+ * @param {ObjectId} albumId
+ * @param {string} fileUrl
+ * @returns {Promise<Album>}
+ */
+const uploadAlbumCover = async (albumId, fileUrl) => {
+  const album = await Album.findById(albumId);
+  if (!album) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
+  }
+  album.coverUrl = fileUrl;
+  await album.save();
+  return album;
+};
+
 module.exports = {
   createAlbum,
   queryAlbums,
   getAlbumById,
   updateAlbumById,
   deleteAlbumById,
+  uploadAlbumCover,
 };

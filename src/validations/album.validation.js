@@ -42,10 +42,17 @@ const deleteAlbum = {
   }),
 };
 
+const uploadAlbumCover = {
+  params: Joi.object().keys({
+    albumId: Joi.string().custom(objectId),
+  }),
+};
+
 module.exports = {
   createAlbum,
   getAlbums,
   getAlbum,
   updateAlbum,
   deleteAlbum,
+  uploadAlbumCover,
 };

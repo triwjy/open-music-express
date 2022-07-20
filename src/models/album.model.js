@@ -19,6 +19,7 @@ const albumSchema = mongoose.Schema(
         ref: Song,
       },
     ],
+    coverUrl: String,
   },
   {
     timestamps: true,

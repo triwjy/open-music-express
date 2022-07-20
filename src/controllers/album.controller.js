@@ -34,10 +34,25 @@ const deleteAlbum = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const uploadAlbumCover = catchAsync(async (req, res) => {
+  const { albumId } = req.params;
+  let fileUrl;
+
+  if (req.file === undefined) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'No file selected');
+  } else {
+    fileUrl = req.file.path;
+    await albumService.uploadAlbumCover(albumId, fileUrl);
+  }
+  // console.log(req.file);
+  res.status(httpStatus.CREATED).send({ fileUrl });
+});
+
 module.exports = {
   createAlbum,
   getAlbums,
   getAlbum,
   updateAlbum,
   deleteAlbum,
+  uploadAlbumCover,
 };
