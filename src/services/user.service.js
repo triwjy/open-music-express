@@ -66,7 +66,7 @@ const checkUserExistence = async (userId) => {
  * @returns {Promise<User>}
  */
 const updateUserById = async (userId, updateBody) => {
-  const user = checkUserExistence(userId);
+  const user = await checkUserExistence(userId);
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
