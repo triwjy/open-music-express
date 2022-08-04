@@ -20,13 +20,19 @@ router
   .delete(auth('manageAlbums'), validate(albumValidation.deleteAlbum), albumController.deleteAlbum);
 
 router
-  .route('/upload-cover/:albumId')
+  .route('/:albumId/likes')
+  .post(auth(), validate(albumValidation.toggleAlbumLikes), albumController.toggleAlbumLikes)
+  .get(auth(), validate(albumValidation.getAlbumLikes), albumController.getAlbumLikes);
+
+router
+  .route('/albumCover/:albumId')
   .post(
     auth('manageAlbums'),
     validate(albumValidation.uploadAlbumCover),
     uploadAlbumCoverMw,
     albumController.uploadAlbumCover
-  );
+  )
+  .get(validate(albumValidation.getAlbumCover), albumController.getAlbumCover);
 
 module.exports = router;
 

@@ -47,16 +47,26 @@ const getUserByEmail = async (email) => {
 };
 
 /**
+ * Check user existence, throw error if not exist
+ * @param {ObjectId} userId
+ * @returns {Promise<User>}
+ */
+const checkUserExistence = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  return user;
+};
+
+/**
  * Update user by id
  * @param {ObjectId} userId
  * @param {Object} updateBody
  * @returns {Promise<User>}
  */
 const updateUserById = async (userId, updateBody) => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+  const user = checkUserExistence(userId);
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
@@ -71,10 +81,7 @@ const updateUserById = async (userId, updateBody) => {
  * @returns {Promise<User>}
  */
 const deleteUserById = async (userId) => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
+  const user = checkUserExistence(userId);
   await user.remove();
   return user;
 };
@@ -86,4 +93,5 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  checkUserExistence,
 };

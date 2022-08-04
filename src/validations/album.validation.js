@@ -48,6 +48,24 @@ const uploadAlbumCover = {
   }),
 };
 
+const getAlbumCover = {
+  params: Joi.object().keys({
+    albumId: Joi.string().custom(objectId),
+  }),
+};
+
+const toggleAlbumLikes = {
+  params: Joi.object().keys({
+    albumId: Joi.string().custom(objectId),
+  }),
+};
+
+const getAlbumLikes = {
+  params: Joi.object().keys({
+    albumId: Joi.string().custom(objectId),
+  }),
+};
+
 module.exports = {
   createAlbum,
   getAlbums,
@@ -55,4 +73,7 @@ module.exports = {
   updateAlbum,
   deleteAlbum,
   uploadAlbumCover,
+  getAlbumCover,
+  toggleAlbumLikes,
+  getAlbumLikes,
 };

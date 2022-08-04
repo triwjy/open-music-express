@@ -23,7 +23,7 @@ if (config.env !== 'test') {
 }
 
 // serve upload cover album
-app.use(express.static(path.join(__dirname, 'uploads', 'albumCover')));
+app.use('/', express.static(path.join(__dirname, '/public')));
 
 // set security HTTP headers
 app.use(helmet());

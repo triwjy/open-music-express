@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 const { roles } = require('../config/roles');
+const Album = require('./album.model');
 
 const userSchema = mongoose.Schema(
   {
@@ -44,6 +45,12 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    likedAlbums: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: Album,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -73,6 +80,34 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
 userSchema.methods.isPasswordMatch = async function (password) {
   const user = this;
   return bcrypt.compare(password, user.password);
+};
+
+/**
+ * Check if user already liked the album or not
+ * @param {ObjectId} albumId
+ * @returns {boolean}
+ */
+userSchema.methods.hasLikedAlbums = function (albumId) {
+  const user = this;
+  if (user.likedAlbums.includes(albumId)) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Add or remove album from likedAlbums
+ * @param {ObjectId} albumId
+ */
+userSchema.methods.toggleLikes = async function (albumId) {
+  const user = this;
+  if (user.likedAlbums.includes(albumId)) {
+    user.likedAlbums.pull(albumId);
+  } else {
+    user.likedAlbums.push(albumId);
+  }
+  await user.save();
+  return user;
 };
 
 userSchema.pre('save', async function (next) {

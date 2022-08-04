@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { Album, Song } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { checkUserExistence } = require('./user.service');
 
 /**
  * Create an album
@@ -9,6 +10,19 @@ const ApiError = require('../utils/ApiError');
  */
 const createAlbum = async (albumBody) => {
   return Album.create(albumBody);
+};
+
+/**
+ * Get album if exist, throw error if not exist
+ * @param {ObjectId} albumId
+ * @returns {Promise<Album>}
+ */
+const checkAlbumExistence = async (albumId) => {
+  const album = await Album.findById(albumId);
+  if (!album) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
+  }
+  return album;
 };
 
 /**
@@ -41,10 +55,8 @@ const getAlbumById = async (albumId) => {
  * @returns {Promise<Album>}
  */
 const updateAlbumById = async (albumId, updateBody) => {
-  const album = await getAlbumById(albumId);
-  if (!album) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
-  }
+  const album = await checkAlbumExistence(albumId);
+
   Object.assign(album, updateBody);
   await album.save();
   return album;
@@ -56,10 +68,7 @@ const updateAlbumById = async (albumId, updateBody) => {
  * @returns {Promise<Album>}
  */
 const deleteAlbumById = async (albumId) => {
-  const album = await getAlbumById(albumId);
-  if (!album) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
-  }
+  const album = await checkAlbumExistence(albumId);
 
   // delete albumId field from associated song
   await Song.updateMany({ albumId }, { albumId: null });
@@ -75,13 +84,43 @@ const deleteAlbumById = async (albumId) => {
  * @returns {Promise<Album>}
  */
 const uploadAlbumCover = async (albumId, fileUrl) => {
-  const album = await Album.findById(albumId);
-  if (!album) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
-  }
+  const album = await checkAlbumExistence(albumId);
+
   album.coverUrl = fileUrl;
   await album.save();
   return album;
+};
+
+const getAlbumCover = async (albumId) => {
+  const album = await checkAlbumExistence(albumId);
+
+  const result = {
+    id: album._id,
+    name: album.name,
+    coverUrl: album.coverUrl,
+  };
+  return result;
+};
+
+/**
+ * Like or unlike an album
+ * @param {ObjectId} albumId
+ * @param {ObjectId} userId
+ * @returns {Promise<string>}
+ */
+const toggleAlbumLikes = async (albumId, userId) => {
+  const album = await checkAlbumExistence(albumId);
+  const user = await checkUserExistence(userId);
+  let message;
+  if (user.hasLikedAlbums(albumId)) {
+    await album.reduceLikes();
+    message = 'Removed from favorite albums';
+  } else {
+    await album.addLikes();
+    message = 'Added to favorite albums';
+  }
+  await user.toggleLikes(albumId);
+  return message;
 };
 
 module.exports = {
@@ -91,4 +130,6 @@ module.exports = {
   updateAlbumById,
   deleteAlbumById,
   uploadAlbumCover,
+  getAlbumCover,
+  toggleAlbumLikes,
 };

@@ -20,11 +20,37 @@ const albumSchema = mongoose.Schema(
       },
     ],
     coverUrl: String,
+    totalLikes: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+/**
+ * Add likes count to album
+ * @returns {Promise<Album>}
+ */
+albumSchema.methods.addLikes = async function () {
+  const album = this;
+  album.totalLikes += 1;
+  await album.save();
+  return album;
+};
+
+/**
+ * Reduce likes count to album
+ * @returns {Promise<Album>}
+ */
+albumSchema.methods.reduceLikes = async function () {
+  const album = this;
+  album.totalLikes -= 1;
+  await album.save();
+  return album;
+};
 
 // add plugin that converts mongoose to json
 albumSchema.plugin(toJSON);

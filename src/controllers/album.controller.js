@@ -41,11 +41,29 @@ const uploadAlbumCover = catchAsync(async (req, res) => {
   if (req.file === undefined) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No file selected');
   } else {
-    fileUrl = req.file.path;
+    fileUrl = `${process.env.BASE_URL}/albumCover/${req.file.filename}`;
     await albumService.uploadAlbumCover(albumId, fileUrl);
   }
-  // console.log(req.file);
   res.status(httpStatus.CREATED).send({ fileUrl });
+});
+
+const getAlbumCover = catchAsync(async (req, res) => {
+  const { albumId } = req.params;
+  const result = await albumService.getAlbumCover(albumId);
+
+  res.status(httpStatus.OK).send({ result });
+});
+
+const toggleAlbumLikes = catchAsync(async (req, res) => {
+  const { albumId } = req.params;
+  const userId = req.user._id;
+  const message = await albumService.toggleAlbumLikes(albumId, userId);
+  res.status(httpStatus.CREATED).send({ message });
+});
+
+const getAlbumLikes = catchAsync(async (req, res) => {
+  const totalLikes = await albumService.getAlbumLikes();
+  res.send({ totalLikes });
 });
 
 module.exports = {
@@ -55,4 +73,7 @@ module.exports = {
   updateAlbum,
   deleteAlbum,
   uploadAlbumCover,
+  getAlbumCover,
+  toggleAlbumLikes,
+  getAlbumLikes,
 };

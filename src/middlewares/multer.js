@@ -1,7 +1,7 @@
 const path = require('path');
 const multer = require('multer');
 
-const albumCoverDir = path.join(process.cwd(), 'uploads', 'albumCover');
+const albumCoverDir = path.join(__dirname, '..', 'public', 'albumCover');
 
 const albumCoverstorage = multer.diskStorage({
   destination(req, file, cb) {
