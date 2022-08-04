@@ -31,6 +31,7 @@ describe('Album routes', () => {
       expect(res.body).toEqual({
         id: expect.any(String),
         songs: [],
+        totalLikes: 0,
         name: newAlbum.name,
         year: newAlbum.year,
       });
@@ -98,6 +99,7 @@ describe('Album routes', () => {
       expect(res.body.results[0]).toEqual({
         id: albumOne._id.toHexString(),
         songs: [],
+        totalLikes: 0,
         name: albumOne.name,
         year: albumOne.year,
       });
@@ -239,6 +241,7 @@ describe('Album routes', () => {
       expect(res.body).toEqual({
         id: albumOne._id.toHexString(),
         songs: [],
+        totalLikes: 0,
         name: albumOne.name,
         year: albumOne.year,
       });
@@ -276,6 +279,7 @@ describe('Album routes', () => {
       expect(res.body).toEqual({
         id: albumOne._id.toHexString(),
         songs: [],
+        totalLikes: 0,
         name: updateBody.name,
         year: updateBody.year,
       });
