@@ -31,6 +31,7 @@ describe('User routes', () => {
       expect(res.body).toEqual({
         id: expect.anything(),
         name: newUser.name,
+        likedAlbums: [],
         email: newUser.email,
         role: newUser.role,
         isEmailVerified: false,
@@ -128,6 +129,7 @@ describe('User routes', () => {
         id: userOne._id.toHexString(),
         name: userOne.name,
         email: userOne.email,
+        likedAlbums: [],
         role: userOne.role,
         isEmailVerified: userOne.isEmailVerified,
       });
@@ -331,6 +333,7 @@ describe('User routes', () => {
         id: userOne._id.toHexString(),
         email: userOne.email,
         name: userOne.name,
+        likedAlbums: [],
         role: userOne.role,
         isEmailVerified: userOne.isEmailVerified,
       });
@@ -464,6 +467,7 @@ describe('User routes', () => {
         id: userOne._id.toHexString(),
         name: updateBody.name,
         email: updateBody.email,
+        likedAlbums: [],
         role: 'user',
         isEmailVerified: false,
       });
