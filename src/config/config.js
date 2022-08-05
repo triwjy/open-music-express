@@ -8,7 +8,10 @@ const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
+    BASE_URL: Joi.string().required().description('Backend base url'),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
+    RABBITMQ_SERVER: Joi.string().required().description('RabbitMQ url'),
+    REDIS_SERVER: Joi.string().required().description('Redis url'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
@@ -35,13 +38,15 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  baseUrl: envVars.BASE_URL,
   mongoose: {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
-    options: {
-      useCreateIndex: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
+  },
+  rabbitmq: {
+    url: envVars.RABBITMQ_SERVER,
+  },
+  redis: {
+    url: envVars.REDIS_SERVER,
   },
   jwt: {
     secret: envVars.JWT_SECRET,

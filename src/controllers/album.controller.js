@@ -3,6 +3,7 @@ const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { albumService } = require('../services');
+const config = require('../config/config');
 
 const createAlbum = catchAsync(async (req, res) => {
   const album = await albumService.createAlbum(req.body);
@@ -41,7 +42,7 @@ const uploadAlbumCover = catchAsync(async (req, res) => {
   if (req.file === undefined) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No file selected');
   } else {
-    fileUrl = `${process.env.BASE_URL}/albumCover/${req.file.filename}`;
+    fileUrl = `${config.baseUrl}/albumCover/${req.file.filename}`;
     await albumService.uploadAlbumCover(albumId, fileUrl);
   }
   res.status(httpStatus.CREATED).send({ fileUrl });

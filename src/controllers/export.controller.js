@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { isPlaylistCollaborator } = require('../services/playlist.service');
-const { amqpProducerService } = require('../services');
+const { amqpProducer } = require('../services');
 
 const exportPlaylist = catchAsync(async (req, res) => {
   const { targetEmail } = req.body;
@@ -19,7 +19,7 @@ const exportPlaylist = catchAsync(async (req, res) => {
     targetEmail,
   };
 
-  await amqpProducerService.sendMessage('export:playlists', JSON.stringify(message));
+  await amqpProducer.sendMessage('export:playlists', JSON.stringify(message));
 
   res.send({ message: `Export playlist request is in queue` });
 });
