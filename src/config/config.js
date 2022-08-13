@@ -43,10 +43,10 @@ module.exports = {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
   },
   rabbitmq: {
-    url: envVars.RABBITMQ_SERVER,
+    url: envVars.RABBITMQ_SERVER, // TODO: separate dev with test
   },
   redis: {
-    url: envVars.REDIS_SERVER,
+    url: envVars.REDIS_SERVER, // TODO: separate dev with test
   },
   jwt: {
     secret: envVars.JWT_SECRET,

@@ -1,5 +1,10 @@
 const faker = require('faker');
 const { User } = require('../../../src/models');
+const { insertAlbums, albumOne, albumTwo } = require('../../fixtures/album.fixture');
+const { userOne } = require('../../fixtures/user.fixture');
+const setupTestDB = require('../../utils/setupTestDB');
+
+setupTestDB();
 
 describe('User model', () => {
   describe('User validation', () => {
@@ -52,6 +57,29 @@ describe('User model', () => {
         role: 'user',
       };
       expect(new User(newUser).toJSON()).not.toHaveProperty('password');
+    });
+  });
+
+  describe('Toggle album likes', () => {
+    let user;
+    beforeEach(async () => {
+      await insertAlbums(albumOne, albumTwo);
+      user = await User.create(userOne);
+    });
+
+    test('should add an album into likedAlbums', async () => {
+      expect(user.likedAlbums).toEqual([]);
+
+      await user.toggleLikes(albumOne._id);
+      await user.toggleLikes(albumTwo._id);
+
+      const updatedUser = await User.findById(user);
+      expect(updatedUser.likedAlbums).toEqual([albumOne._id, albumTwo._id]);
+
+      await user.toggleLikes(albumOne._id);
+
+      const finalStateUser = await User.findById(user);
+      expect(finalStateUser.likedAlbums).toEqual([albumTwo._id]);
     });
   });
 });
