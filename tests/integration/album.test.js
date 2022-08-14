@@ -1,3 +1,4 @@
+const path = require('path');
 const request = require('supertest');
 const faker = require('faker');
 const httpStatus = require('http-status');
@@ -5,8 +6,8 @@ const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
 const { Album } = require('../../src/models');
 const { insertAlbums, albumOne, albumTwo } = require('../fixtures/album.fixture');
-const { adminAccessToken, userOneAccessToken } = require('../fixtures/token.fixture');
-const { insertUsers, admin } = require('../fixtures/user.fixture');
+const { adminAccessToken, userOneAccessToken, userTwoAccessToken } = require('../fixtures/token.fixture');
+const { insertUsers, admin, userOne, userTwo } = require('../fixtures/user.fixture');
 
 setupTestDB();
 
@@ -415,6 +416,98 @@ describe('Album routes', () => {
 
       songRes = await request(app).get(`/v1/songs/${songRes.body.id}`);
       expect(songRes.body.albumId).toBeNull();
+    });
+  });
+
+  describe('POST /v1/albums/albumCover/:albumId', () => {
+    beforeEach(async () => {
+      await insertAlbums([albumOne]);
+      await insertUsers([admin]);
+    });
+    test('should upload album cover successfully if data is ok and admin is authenticated', async () => {
+      const filePath = path.join(__dirname, '..', 'fixtures', 'twilio.png');
+      const res = await request(app)
+        .post(`/v1/albums/albumCover/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .attach('albumCover', filePath)
+        .expect(httpStatus.CREATED);
+
+      expect(res.body.fileUrl).toContain('http://');
+    });
+
+    test('should return 401 when trying to upload album cover without admin token', async () => {
+      const filePath = path.join(__dirname, '..', 'fixtures', 'twilio.png');
+      await request(app)
+        .post(`/v1/albums/albumCover/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .attach('albumCover', filePath)
+        .expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 400 when no file was sent', async () => {
+      await request(app)
+        .post(`/v1/albums/albumCover/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+
+    test('should return 400 when uploading not-supported extension type', async () => {
+      const filePath = path.join(__dirname, '..', 'fixtures', 'test.txt');
+      await request(app)
+        .post(`/v1/albums/albumCover/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .attach('albumCover', filePath)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+  });
+  describe('GET /v1/albums/albumCover/:albumId', () => {
+    beforeEach(async () => {
+      await insertAlbums([albumOne]);
+      await insertUsers([admin]);
+    });
+
+    test('should give the correct response for not uploaded album cover url', async () => {
+      const res = await request(app).get(`/v1/albums/albumCover/${albumOne._id}`).expect(200);
+      expect(res.body.result.coverUrl).toBe('not uploaded');
+    });
+
+    test('should return album cover url', async () => {
+      const filePath = path.join(__dirname, '..', 'fixtures', 'twilio.png');
+      await request(app)
+        .post(`/v1/albums/albumCover/${albumOne._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .attach('albumCover', filePath)
+        .expect(httpStatus.CREATED);
+
+      const res = await request(app).get(`/v1/albums/albumCover/${albumOne._id}`).expect(200);
+      expect(res.body.result.coverUrl).toContain('http://');
+    });
+  });
+  describe('POST /v1/albums/likes/:albumId', () => {
+    beforeEach(async () => {
+      await insertAlbums([albumOne]);
+      await insertUsers([userOne, userTwo]);
+    });
+    test('should toggle between like an unlike  on album', async () => {
+      await request(app)
+        .post(`/v1/albums/likes/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .expect(httpStatus.OK);
+      await request(app)
+        .post(`/v1/albums/likes/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userTwoAccessToken}`)
+        .expect(httpStatus.OK);
+
+      let albumOneLikesResponse = await request(app).get(`/v1/albums/likes/${albumOne._id}`).expect(httpStatus.OK);
+      expect(albumOneLikesResponse.body.totalLikes).toBe(2);
+
+      await request(app)
+        .post(`/v1/albums/likes/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .expect(httpStatus.OK);
+
+      albumOneLikesResponse = await request(app).get(`/v1/albums/likes/${albumOne._id}`).expect(httpStatus.OK);
+      expect(albumOneLikesResponse.body.totalLikes).toBe(1);
     });
   });
 });

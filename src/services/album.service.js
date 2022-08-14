@@ -97,7 +97,7 @@ const getAlbumCover = async (albumId) => {
   const result = {
     id: album._id,
     name: album.name,
-    coverUrl: album.coverUrl,
+    coverUrl: album.coverUrl || 'not uploaded',
   };
   return result;
 };
@@ -123,6 +123,11 @@ const toggleAlbumLikes = async (albumId, userId) => {
   return message;
 };
 
+const getAlbumLikes = async (albumId) => {
+  const album = await checkAlbumExistence(albumId);
+  return album.totalLikes;
+};
+
 module.exports = {
   createAlbum,
   queryAlbums,
@@ -132,4 +137,5 @@ module.exports = {
   uploadAlbumCover,
   getAlbumCover,
   toggleAlbumLikes,
+  getAlbumLikes,
 };

@@ -36,7 +36,7 @@ const albumSchema = mongoose.Schema(
  */
 albumSchema.methods.addLikes = async function () {
   const album = this;
-  await album.update({ $inc: { totalLikes: 1 } });
+  await album.updateOne({ $inc: { totalLikes: 1 } });
   return album;
 };
 
@@ -46,7 +46,7 @@ albumSchema.methods.addLikes = async function () {
  */
 albumSchema.methods.reduceLikes = async function () {
   const album = this;
-  await album.update({ $inc: { totalLikes: -1 } });
+  await album.updateOne({ $inc: { totalLikes: -1 } });
   return album;
 };
 

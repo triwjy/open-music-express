@@ -1,5 +1,7 @@
 const path = require('path');
+const httpStatus = require('http-status');
 const multer = require('multer');
+const ApiError = require('../utils/ApiError');
 
 const albumCoverDir = path.join(__dirname, '..', 'public', 'albumCover');
 
@@ -21,16 +23,28 @@ function checkFiletype(file, cb) {
   if (mimetype && extname) {
     return cb(null, true);
   }
-  cb(new Error('Invalid file type'));
+  // throw new ApiError(httpStatus.BAD_REQUEST);
+  const err = new Error('Invalid file type');
+  err.code = httpStatus.BAD_REQUEST;
+  cb(err, false);
 }
 
-const uploadAlbumCoverMw = multer({
-  storage: albumCoverstorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB,
-  fileFilter(req, file, cb) {
-    checkFiletype(file, cb);
-  },
-}).single('albumCover');
+const uploadAlbumCoverMw = (req, res, next) => {
+  const upload = multer({
+    storage: albumCoverstorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB,
+    fileFilter(_, file, cb) {
+      checkFiletype(file, cb);
+    },
+  }).single('albumCover');
+
+  upload(req, res, function (err) {
+    if (err) {
+      return next(new ApiError(err.code, err.message));
+    }
+    next();
+  });
+};
 
 module.exports = {
   uploadAlbumCoverMw,

@@ -20,9 +20,9 @@ router
   .delete(auth('manageAlbums'), validate(albumValidation.deleteAlbum), albumController.deleteAlbum);
 
 router
-  .route('/:albumId/likes')
+  .route('/likes/:albumId')
   .post(auth(), validate(albumValidation.toggleAlbumLikes), albumController.toggleAlbumLikes)
-  .get(auth(), validate(albumValidation.getAlbumLikes), albumController.getAlbumLikes);
+  .get(validate(albumValidation.getAlbumLikes), albumController.getAlbumLikes);
 
 router
   .route('/albumCover/:albumId')

@@ -59,11 +59,12 @@ const toggleAlbumLikes = catchAsync(async (req, res) => {
   const { albumId } = req.params;
   const userId = req.user._id;
   const message = await albumService.toggleAlbumLikes(albumId, userId);
-  res.status(httpStatus.CREATED).send({ message });
+  res.status(httpStatus.OK).send({ message });
 });
 
 const getAlbumLikes = catchAsync(async (req, res) => {
-  const totalLikes = await albumService.getAlbumLikes();
+  const { albumId } = req.params;
+  const totalLikes = await albumService.getAlbumLikes(albumId);
   res.send({ totalLikes });
 });
 
