@@ -5,13 +5,13 @@ const { isPlaylistCollaborator } = require('../services/playlist.service');
 const { amqpProducer } = require('../services');
 
 const exportPlaylist = catchAsync(async (req, res) => {
-  const { targetEmail } = req.body;
+  const targetEmail = req.user.email;
   const { playlistId } = req.params;
   const collaboratorId = req.user._id;
 
   const validCollaborator = await isPlaylistCollaborator(playlistId, collaboratorId);
   if (!validCollaborator) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Not authorized to export playlist');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
   }
 
   const message = {

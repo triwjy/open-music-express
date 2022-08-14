@@ -1,8 +1,9 @@
 const Joi = require('joi');
+const { objectId } = require('./custom.validation');
 
 const exportPlaylist = {
-  body: Joi.object().keys({
-    targetEmail: Joi.string().required().email(),
+  params: Joi.object().keys({
+    playlistId: Joi.string().custom(objectId),
   }),
 };
 

@@ -202,10 +202,7 @@ const isPlaylistOwner = async (playlistId, ownerId) => {
  */
 const isPlaylistCollaborator = async (playlistId, collaboratorId) => {
   const playlist = await Playlist.findById(playlistId);
-  if (!playlist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
-  }
-  if (playlist.collaborators.includes(collaboratorId)) {
+  if (playlist && playlist.collaborators.includes(collaboratorId)) {
     return true;
   }
   return false;

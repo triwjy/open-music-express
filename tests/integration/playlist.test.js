@@ -494,7 +494,7 @@ describe('Playlist routes', () => {
     });
   });
 
-  describe('DELETE /playlists/:playlistUd/collaborations', () => {
+  describe('DELETE /playlists/:playlistId/collaborations', () => {
     beforeEach(async () => {
       await insertUsers([userOne, userTwo]);
       await insertPlaylists([playlistOne]);
