@@ -20,13 +20,14 @@ function checkFiletype(file, cb) {
   const extname = filetypes.test(path.extname(file.originalname.toLowerCase()));
   const mimetype = filetypes.test(file.mimetype);
 
-  if (mimetype && extname) {
-    return cb(null, true);
-  }
   // throw new ApiError(httpStatus.BAD_REQUEST);
-  const err = new Error('Invalid file type');
-  err.code = httpStatus.BAD_REQUEST;
-  cb(err, false);
+  if (!mimetype || !extname) {
+    const err = new Error('Invalid file type');
+    err.code = httpStatus.BAD_REQUEST;
+    return cb(err, false);
+  }
+
+  return cb(null, true);
 }
 
 const uploadAlbumCoverMw = (req, res, next) => {
