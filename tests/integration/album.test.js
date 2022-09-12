@@ -8,6 +8,7 @@ const { Album } = require('../../src/models');
 const { insertAlbums, albumOne, albumTwo } = require('../fixtures/album.fixture');
 const { adminAccessToken, userOneAccessToken, userTwoAccessToken } = require('../fixtures/token.fixture');
 const { insertUsers, admin, userOne, userTwo } = require('../fixtures/user.fixture');
+const redisClient = require('../../src/services/redis/redis.init');
 
 setupTestDB();
 
@@ -485,8 +486,14 @@ describe('Album routes', () => {
   });
   describe('POST /v1/albums/likes/:albumId', () => {
     beforeEach(async () => {
+      if (!redisClient.isReady) {
+        await redisClient.connect();
+      }
       await insertAlbums([albumOne]);
       await insertUsers([userOne, userTwo]);
+    });
+    afterEach(async () => {
+      await redisClient.quit();
     });
     test('should toggle between like an unlike  on album', async () => {
       await request(app)
@@ -508,6 +515,19 @@ describe('Album routes', () => {
 
       albumOneLikesResponse = await request(app).get(`/v1/albums/likes/${albumOne._id}`).expect(httpStatus.OK);
       expect(albumOneLikesResponse.body.totalLikes).toBe(1);
+    });
+
+    test('should use custom header when returning results from cache', async () => {
+      await request(app)
+        .post(`/v1/albums/likes/${albumOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .expect(httpStatus.OK);
+
+      const firstAlbumOneLikesResponse = await request(app).get(`/v1/albums/likes/${albumOne._id}`).expect(httpStatus.OK);
+      expect(firstAlbumOneLikesResponse.headers['x-data-source']).toBeUndefined();
+
+      const secondAlbumOneLikesResponse = await request(app).get(`/v1/albums/likes/${albumOne._id}`).expect(httpStatus.OK);
+      expect(secondAlbumOneLikesResponse.headers['x-data-source']).toBe('cache');
     });
   });
 });

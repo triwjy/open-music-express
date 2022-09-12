@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { albumService } = require('../services');
+const { albumService, redisService } = require('../services');
 const config = require('../config/config');
 
 const createAlbum = catchAsync(async (req, res) => {
@@ -59,12 +59,20 @@ const toggleAlbumLikes = catchAsync(async (req, res) => {
   const { albumId } = req.params;
   const userId = req.user._id;
   const message = await albumService.toggleAlbumLikes(albumId, userId);
+  await redisService.del(`albumlikes-${albumId}`);
   res.status(httpStatus.OK).send({ message });
 });
 
 const getAlbumLikes = catchAsync(async (req, res) => {
   const { albumId } = req.params;
-  const totalLikes = await albumService.getAlbumLikes(albumId);
+  let totalLikes;
+  totalLikes = await redisService.get(`albumlikes-${albumId}`);
+  if (totalLikes !== null) {
+    res.set('X-Data-Source', 'cache');
+  } else {
+    totalLikes = await albumService.getAlbumLikes(albumId);
+    await redisService.set(`albumlikes-${albumId}`, totalLikes, 1800);
+  }
   res.send({ totalLikes });
 });
 

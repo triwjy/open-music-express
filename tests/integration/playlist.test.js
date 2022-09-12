@@ -730,11 +730,9 @@ describe('Playlist routes', () => {
     });
 
     test('should limit returned array if limit param is specified', async () => {
-      await Promise.all([
-        addSong(songOne._id, playlistOne._id),
-        addSong(songTwo._id, playlistOne._id),
-        addSong(songThree._id, playlistOne._id),
-      ]);
+      await addSong(songOne._id, playlistOne._id);
+      await addSong(songTwo._id, playlistOne._id);
+      await addSong(songThree._id, playlistOne._id);
 
       const res = await request(app)
         .get(`/v1/playlists/${playlistOne._id}/activities`)
@@ -758,11 +756,9 @@ describe('Playlist routes', () => {
     });
 
     test('should return the correct page if page and limit params are specified', async () => {
-      await Promise.all([
-        addSong(songOne._id, playlistOne._id),
-        addSong(songTwo._id, playlistOne._id),
-        addSong(songThree._id, playlistOne._id),
-      ]);
+      await addSong(songOne._id, playlistOne._id);
+      await addSong(songTwo._id, playlistOne._id);
+      await addSong(songThree._id, playlistOne._id);
 
       const res = await request(app)
         .get(`/v1/playlists/${playlistOne._id}/activities`)
