@@ -48,13 +48,6 @@ const uploadAlbumCover = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ fileUrl });
 });
 
-const getAlbumCover = catchAsync(async (req, res) => {
-  const { albumId } = req.params;
-  const result = await albumService.getAlbumCover(albumId);
-
-  res.status(httpStatus.OK).send({ result });
-});
-
 const toggleAlbumLikes = catchAsync(async (req, res) => {
   const { albumId } = req.params;
   const userId = req.user._id;
@@ -83,7 +76,6 @@ module.exports = {
   updateAlbum,
   deleteAlbum,
   uploadAlbumCover,
-  getAlbumCover,
   toggleAlbumLikes,
   getAlbumLikes,
 };

@@ -435,7 +435,7 @@ describe('Album routes', () => {
         .post(`/v1/albums/albumCover/${albumOne._id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .attach('albumCover', filePath)
-        .expect(httpStatus.CREATED);
+        .expect(httpStatus.OK);
 
       expect(res.body.fileUrl).toContain('http://');
     });
@@ -463,29 +463,6 @@ describe('Album routes', () => {
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .attach('albumCover', filePath)
         .expect(httpStatus.BAD_REQUEST);
-    });
-  });
-  describe('GET /v1/albums/albumCover/:albumId', () => {
-    beforeEach(async () => {
-      await insertAlbums([albumOne]);
-      await insertUsers([admin]);
-    });
-
-    test('should give the correct response for not uploaded album cover url', async () => {
-      const res = await request(app).get(`/v1/albums/albumCover/${albumOne._id}`).expect(200);
-      expect(res.body.result.coverUrl).toBe('not uploaded');
-    });
-
-    test('should return album cover url', async () => {
-      const filePath = path.join(__dirname, '..', 'fixtures', 'twilio.png');
-      await request(app)
-        .post(`/v1/albums/albumCover/${albumOne._id}`)
-        .set('Authorization', `Bearer ${adminAccessToken}`)
-        .attach('albumCover', filePath)
-        .expect(httpStatus.CREATED);
-
-      const res = await request(app).get(`/v1/albums/albumCover/${albumOne._id}`).expect(200);
-      expect(res.body.result.coverUrl).toContain('http://');
     });
   });
   describe('POST /v1/albums/likes/:albumId', () => {

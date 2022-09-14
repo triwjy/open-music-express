@@ -91,17 +91,6 @@ const uploadAlbumCover = async (albumId, fileUrl) => {
   return album;
 };
 
-const getAlbumCover = async (albumId) => {
-  const album = await checkAlbumExistence(albumId);
-
-  const result = {
-    id: album._id,
-    name: album.name,
-    fileUrl: album.coverUrl || 'not uploaded',
-  };
-  return result;
-};
-
 /**
  * Like or unlike an album
  * @param {ObjectId} albumId
@@ -135,7 +124,6 @@ module.exports = {
   updateAlbumById,
   deleteAlbumById,
   uploadAlbumCover,
-  getAlbumCover,
   toggleAlbumLikes,
   getAlbumLikes,
 };
