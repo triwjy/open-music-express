@@ -36,6 +36,7 @@ describe('Album routes', () => {
         totalLikes: 0,
         name: newAlbum.name,
         year: newAlbum.year,
+        coverUrl: '',
       });
 
       const dbAlbum = await Album.findById(res.body.id);
@@ -104,6 +105,7 @@ describe('Album routes', () => {
         totalLikes: 0,
         name: albumOne.name,
         year: albumOne.year,
+        coverUrl: '',
       });
     });
 
@@ -246,6 +248,7 @@ describe('Album routes', () => {
         totalLikes: 0,
         name: albumOne.name,
         year: albumOne.year,
+        coverUrl: '',
       });
     });
 
@@ -284,6 +287,7 @@ describe('Album routes', () => {
         totalLikes: 0,
         name: updateBody.name,
         year: updateBody.year,
+        coverUrl: '',
       });
 
       const dbAlbum = await Album.findById(albumOne._id);

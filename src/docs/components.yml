@@ -23,15 +23,30 @@ components:
       type: object
       properties:
         id:
+          description: mongodb object id
           type: string
+          pattern: /^[a-f\d]{}24$/i
         name:
           type: string
         year:
           type: number
+        songs:
+          type: array
+          items: 
+            description: mongodb object id
+            type: string
+            pattern: /^[a-f\d]{}24$/i
+        coverUrl:
+          type: string
+        totalLikes:
+          type: number
       example:
-        id: 5ebac534954b54139806c112
-        name: fake name
+        id: "62d0e72a23a22606c37c0cf2"
+        name: Superstar Collection
         year: 2020
+        songs: ["62d0e73223a22606c37c0cf6", "62d0e73623a22606c37c0cfa"]
+        coverUrl: 'http://your-image-bucket.com'
+        totalLikes: 0
 
     Song:
       type: object
@@ -83,8 +98,118 @@ components:
           type: number
         message:
           type: string
+    OctetStream:
+      type: string
+      format: binary
+
+  requestBodies:
+    Album:
+      type: object
+      required:
+        - name
+        - year
+      properties:
+        name:
+          type: string
+        year:
+          type: number
+        songs:
+          type: array
+          items: 
+            description: mongodb object id
+            type: string
+            pattern: /^[a-f\d]{}24$/i
+        coverUrl:
+          type: string
+        totalLikes: 
+          type: number
+      example:
+        name: Superstar Collection
+        year: 2020
+        songs: ["62d0e72a23a22606c37c0c01", "62d0e72a23a22606c37c0c02"]
+        coverUrl: 'http://your-image-bucket.com'
+        totalLikes: 0
+
+    AlbumPatch:
+      type: object
+      properties:
+        name:
+          type: string
+        year:
+          type: number
+        songs:
+          type: array
+          items: 
+            description: mongodb object id
+            type: string
+            pattern: /^[a-f\d]{}24$/i
+        coverUrl:
+          type: string
+        totalLikes:
+          type: number
+      example:
+        year: 2020
 
   responses:
+    AlbumDetail:
+      type: object
+      properties:
+        id:
+          description: mongodb object id
+          type: string
+          pattern: /^[a-f\d]{}24$/i
+        name:
+          type: string
+        year:
+          type: number
+        songs:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Song'            
+        coverUrl:
+          type: string
+        totalLikes:
+          type: number
+      example:
+        id: "62d0e72a23a22606c37c0cf2"
+        name: Superstar Collection
+        year: 2020
+        songs: 
+          - id: "62d0e73223a22606c37c0cf6"
+            albumId: "62d0e72a23a22606c37c0cf2"
+            title: "song2"
+            year: 1999
+            genre: "rock"
+            performer: "singer1"
+            duration: 300
+          - id: "62d0e73223a22606c37c0cf8"
+            albumId: "62d0e72a23a22606c37c0cf2"
+            title: "song3"
+            year: 1999
+            genre: "rock"
+            performer: "singer1"
+            duration: 310        
+        coverUrl: 'http://your-image-bucket.com'
+        totalLikes: 0
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: "Internal Server Error"
+    InvalidRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: "year must be a number"
     DuplicateEmail:
       description: Email already taken
       content:
@@ -113,7 +238,7 @@ components:
             code: 401
             message: Please authenticate
     Forbidden:
-      description: Forbidden
+      description: Forbidden / User don't have the permission to access the resource
       content:
         application/json:
           schema:
@@ -136,3 +261,12 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    AlbumIdParam:
+      name: id
+      in: path
+      required: true
+      description: Album id
+      schema:
+        type: string
+      

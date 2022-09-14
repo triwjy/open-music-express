@@ -97,7 +97,7 @@ const getAlbumCover = async (albumId) => {
   const result = {
     id: album._id,
     name: album.name,
-    coverUrl: album.coverUrl || 'not uploaded',
+    fileUrl: album.coverUrl || 'not uploaded',
   };
   return result;
 };

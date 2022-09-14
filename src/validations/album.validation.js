@@ -5,6 +5,9 @@ const createAlbum = {
   body: Joi.object().keys({
     name: Joi.string().required(),
     year: Joi.number().required(),
+    songs: Joi.array().items(Joi.string().custom(objectId)),
+    coverUrl: Joi.string(),
+    totalLikes: Joi.number(),
   }),
 };
 
@@ -32,6 +35,9 @@ const updateAlbum = {
     .keys({
       name: Joi.string(),
       year: Joi.number(),
+      songs: Joi.array().items(Joi.string().custom(objectId)),
+      totalLikes: Joi.number(),
+      coverUrl: Joi.string(),
     })
     .min(1),
 };

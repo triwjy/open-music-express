@@ -19,7 +19,10 @@ const albumSchema = mongoose.Schema(
         ref: Song,
       },
     ],
-    coverUrl: String,
+    coverUrl: {
+      type: String,
+      default: '',
+    },
     totalLikes: {
       type: Number,
       default: 0,

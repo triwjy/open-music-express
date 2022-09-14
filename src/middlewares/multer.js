@@ -16,7 +16,7 @@ const albumCoverstorage = multer.diskStorage({
 });
 
 function checkFiletype(file, cb) {
-  const filetypes = /apng|avif|bmp|gif|jpeg|jpg|png|webp/;
+  const filetypes = /bmp|gif|jpeg|jpg|png|webp/;
   const extname = filetypes.test(path.extname(file.originalname.toLowerCase()));
   const mimetype = filetypes.test(file.mimetype);
 

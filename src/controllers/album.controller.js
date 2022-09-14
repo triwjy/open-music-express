@@ -32,7 +32,7 @@ const updateAlbum = catchAsync(async (req, res) => {
 
 const deleteAlbum = catchAsync(async (req, res) => {
   await albumService.deleteAlbumById(req.params.albumId);
-  res.status(httpStatus.NO_CONTENT).send();
+  res.status(httpStatus.NO_CONTENT).send({ message: 'delete successful' });
 });
 
 const uploadAlbumCover = catchAsync(async (req, res) => {
@@ -45,7 +45,7 @@ const uploadAlbumCover = catchAsync(async (req, res) => {
     fileUrl = `${config.baseUrl}/albumCover/${req.file.filename}`;
     await albumService.uploadAlbumCover(albumId, fileUrl);
   }
-  res.status(httpStatus.CREATED).send({ fileUrl });
+  res.status(httpStatus.OK).send({ fileUrl });
 });
 
 const getAlbumCover = catchAsync(async (req, res) => {
