@@ -25,8 +25,8 @@ const getPlaylist = catchAsync(async (req, res) => {
 const deletePlaylist = catchAsync(async (req, res) => {
   const { playlistId } = req.params;
   const ownerId = req.user._id;
-  const result = await playlistService.deletePlaylist(playlistId, ownerId);
-  res.status(httpStatus.NO_CONTENT).send(result);
+  await playlistService.deletePlaylist(playlistId, ownerId);
+  res.status(httpStatus.NO_CONTENT).send();
 });
 
 // add a song into a playlist
@@ -35,7 +35,7 @@ const addSongToPlaylist = catchAsync(async (req, res) => {
   const { songId } = req.body;
   const collaboratorId = req.user._id;
   const result = await playlistService.addSongToPlaylist(playlistId, songId, collaboratorId);
-  res.status(httpStatus.CREATED).send(result);
+  res.status(httpStatus.OK).send(result);
 });
 
 // get songs of authorized playlist
@@ -43,7 +43,7 @@ const getSongsFromPlaylist = catchAsync(async (req, res) => {
   const { playlistId } = req.params;
   const collaboratorId = req.user._id;
   const result = await playlistService.getSongsFromPlaylist(playlistId, collaboratorId);
-  res.send(result);
+  res.send({ songs: result });
 });
 
 // delete a song from authorized playlist

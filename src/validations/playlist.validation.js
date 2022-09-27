@@ -70,7 +70,6 @@ const queryPlaylistActivities = {
   }),
   query: Joi.object().keys({
     action: Joi.string().valid('add', 'delete'),
-    sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
   }),

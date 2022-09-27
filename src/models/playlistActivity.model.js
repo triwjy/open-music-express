@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { paginate, toJSONWithCreatedAt } = require('./plugins');
 
 const playlistActivitySchema = mongoose.Schema(
   {
@@ -29,7 +29,7 @@ const playlistActivitySchema = mongoose.Schema(
   }
 );
 // add plugin that converts mongoose to json
-playlistActivitySchema.plugin(toJSON);
+playlistActivitySchema.plugin(toJSONWithCreatedAt);
 playlistActivitySchema.plugin(paginate);
 
 // always populate with name and titles

@@ -64,7 +64,7 @@ module.exports = router;
  *             schema:
  *                $ref: '#/components/schemas/Album'
  *       "400":
- *         $ref: '#/components/responses/InvalidRequest'
+ *         $ref: '#/components/responses/InvalidRequestEmptyName'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *       "500":
@@ -146,8 +146,6 @@ module.exports = router;
  *           application/json:
  *             schema:
  *                $ref: '#/components/responses/AlbumDetail'
- *       "400":
- *         $ref: '#/components/responses/InvalidRequest'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
@@ -173,7 +171,7 @@ module.exports = router;
  *             schema:
  *                $ref: '#/components/schemas/Album'
  *       "400":
- *         $ref: '#/components/responses/InvalidRequest'
+ *         $ref: '#/components/responses/InvalidRequestEmptyName'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -191,16 +189,9 @@ module.exports = router;
  *       - $ref: '#/components/parameters/AlbumIdParam'
  *     responses:
  *       "204":
- *         description: Album deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *                type: object
- *                properties:
- *                  message:
- *                    type: string
- *                example:
- *                  message: delete successful
+ *         description: Album was deleted successfully
+ *       "400":
+ *         $ref: '#/components/responses/InvalidRequestId'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":

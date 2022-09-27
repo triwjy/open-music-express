@@ -32,7 +32,7 @@ const updateAlbum = catchAsync(async (req, res) => {
 
 const deleteAlbum = catchAsync(async (req, res) => {
   await albumService.deleteAlbumById(req.params.albumId);
-  res.status(httpStatus.NO_CONTENT).send({ message: 'delete successful' });
+  res.status(httpStatus.NO_CONTENT).send();
 });
 
 const uploadAlbumCover = catchAsync(async (req, res) => {

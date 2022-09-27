@@ -58,12 +58,14 @@ const updateSongById = async (songId, updateBody) => {
   }
 
   // update case: new album ID is added to song
-  const album = await Album.findById(updateBody.albumId);
-  if (!album) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
+  if (updateBody.albumId) {
+    const album = await Album.findById(updateBody.albumId);
+    if (!album) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
+    }
+    album.songs.push(song);
+    await album.save();
   }
-  album.songs.push(song);
-  await album.save();
 
   Object.assign(song, updateBody);
   await song.save();

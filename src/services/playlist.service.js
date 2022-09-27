@@ -12,7 +12,7 @@ const ApiError = require('../utils/ApiError');
 const createPlaylist = async (body, owner) => {
   const playlist = new Playlist({
     name: body.name,
-    owner,
+    owner: owner.id,
     collaborators: [owner],
   });
   await playlist.save();
@@ -40,6 +40,16 @@ const getAuthorizedPlaylistById = async (playlistId, collaboratorId) => {
 };
 
 /**
+ * Get an songs from playlist, accessible by collaborators
+ * @param {ObjectId} playlistId
+ * @param {ObjectId} collaboratorId
+ * @returns {Promise<Playlist>}
+ */
+const getPlaylistSongs = async (playlistId, collaboratorId) => {
+  return Playlist.findOne({ _id: playlistId, collaborators: collaboratorId }).populate('songs');
+};
+
+/**
  * Get an owned playlist of a playlist owner
  * @param {ObjectId} playlistId
  * @param {ObjectId} ownerId
@@ -61,6 +71,7 @@ const deletePlaylist = async (playlistId, ownerId) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
   }
   await playlist.remove();
+  await PlaylistActivity.deleteMany({ 'playlist.id': playlistId });
   return playlist;
 };
 
@@ -103,11 +114,11 @@ const addSongToPlaylist = async (playlistId, songId, collaboratorId) => {
  * @returns {Promise<Playlist>}
  */
 const getSongsFromPlaylist = async (playlistId, collaboratorId) => {
-  const playlist = await getAuthorizedPlaylistById(playlistId, collaboratorId);
+  const playlist = await getPlaylistSongs(playlistId, collaboratorId);
   if (!playlist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Playlist not found');
   }
-  return playlist;
+  return playlist.songs;
 };
 
 /**
@@ -219,7 +230,8 @@ const isPlaylistCollaborator = async (playlistId, collaboratorId) => {
  * @returns {Promise<QueryResult>}
  */
 const queryPlaylistActivities = async (playlistId, filter, options) => {
-  const activities = await PlaylistActivity.paginate(filter, options);
+  const paginateFilter = { ...filter, playlist: playlistId };
+  const activities = await PlaylistActivity.paginate(paginateFilter, options);
   // const activities = await PlaylistActivity.find({ playlist: playlistId }).populate('song');
   return activities;
 };

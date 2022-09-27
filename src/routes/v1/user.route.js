@@ -243,6 +243,8 @@ module.exports = router;
  *     responses:
  *       "200":
  *         description: No content
+ *       "400":
+ *         $ref: '#/components/responses/InvalidRequestId'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":

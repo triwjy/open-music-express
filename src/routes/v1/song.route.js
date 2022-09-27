@@ -29,8 +29,8 @@ module.exports = router;
  * @swagger
  * /songs:
  *   post:
- *     summary: Create a song
- *     description: Only signed in user can create a song.
+ *     summary: Add new song
+ *     description: Only admin can add new song.
  *     tags: [Songs]
  *     security:
  *       - bearerAuth: []
@@ -59,9 +59,9 @@ module.exports = router;
  *               albumId:
  *                  type: string
  *             example:
- *               title: Life in Technicolor
+ *               title: Song 1
  *               year: 2008
- *               performer: Coldplay
+ *               performer: Singer 1
  *               genre: Indie
  *               duration: 120
  *               albumId: 628f36a883e55f43c2f5dc83
@@ -72,6 +72,8 @@ module.exports = router;
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Song'
+ *       "400":
+ *         $ref: '#/components/responses/InvalidRequestEmptyName'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -81,8 +83,6 @@ module.exports = router;
  *     summary: Get all songs
  *     description: All users can retrieve all songs.
  *     tags: [Songs]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: title
@@ -157,12 +157,7 @@ module.exports = router;
  *     description: Song information.
  *     tags: [Songs]
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Song id
+ *       - $ref: '#/components/parameters/SongIdParam'
  *     responses:
  *       "200":
  *         description: OK
@@ -170,20 +165,19 @@ module.exports = router;
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Song'
+ *       "400":
+ *         $ref: '#/components/responses/InvalidRequestId'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
  *   patch:
  *     summary: Update a song
- *     description: Update song resource.
+ *     description: Only admin can update song.
  *     tags: [Songs]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Song id
+ *       - $ref: '#/components/parameters/SongIdParam'
  *     requestBody:
  *       required: true
  *       content:
@@ -219,25 +213,26 @@ module.exports = router;
  *               $ref: '#/components/schemas/Song'
  *       "400":
  *         $ref: '#/components/responses/EmptyTitle'
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
  *
  *   delete:
- *     summary: Delete a user
- *     description: Logged in users can delete only themselves. Only admins can delete other users.
- *     tags: [Users]
+ *     summary: Delete a song
+ *     description: Only admin can delete a song.
+ *     tags: [Songs]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: User id
+ *       - $ref: '#/components/parameters/SongIdParam'
  *     responses:
- *       "200":
- *         description: No content
+ *       "204":
+ *         description: Song was deleted successfully
+ *       "400":
+ *         $ref: '#/components/responses/InvalidRequestId'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":

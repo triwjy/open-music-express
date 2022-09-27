@@ -32,14 +32,7 @@ describe('Playlist routes', () => {
       expect(res.body).toEqual({
         id: expect.anything(),
         name: newPlaylistBody.name,
-        owner: {
-          id: expect.anything(),
-          email: userOne.email,
-          name: userOne.name,
-          likedAlbums: [],
-          role: userOne.role,
-          isEmailVerified: userOne.isEmailVerified,
-        },
+        owner: expect.anything(),
         collaborators: [expect.anything()],
         songs: [],
         activities: [],
@@ -257,12 +250,17 @@ describe('Playlist routes', () => {
         .expect(httpStatus.OK);
 
       expect(res.body).toEqual({
-        id: playlistOne._id.toHexString(),
-        songs: [songOne._id.toHexString()],
-        collaborators: [userOne._id.toHexString()],
-        name: playlistOne.name,
-        owner: userOne._id.toHexString(),
-        activities: [expect.anything()],
+        songs: [
+          {
+            id: expect.anything(),
+            albumId: songOne.albumId,
+            duration: songOne.duration,
+            genre: songOne.genre,
+            performer: songOne.performer,
+            title: songOne.title,
+            year: songOne.year,
+          },
+        ],
       });
     });
 
@@ -301,12 +299,12 @@ describe('Playlist routes', () => {
     beforeEach(async () => {
       await Promise.all([insertUsers([userOne]), insertPlaylists([playlistOne]), insertSongs([songOne])]);
     });
-    test('should return 201 and successfully add song to playlist and log activities if data is ok', async () => {
+    test('should return 200 and successfully add song to playlist and log activities if data is ok', async () => {
       const res = await request(app)
         .post(`/v1/playlists/${playlistOne._id}/songs`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send({ songId: songOne._id })
-        .expect(httpStatus.CREATED);
+        .expect(httpStatus.OK);
 
       expect(res.body).toEqual({
         id: expect.anything(),

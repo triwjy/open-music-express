@@ -66,10 +66,69 @@ components:
         albumId:
           type: string
       example:
-        id: 5ebac534954b54139806c112
-        email: fake@example.com
-        name: fake name
-        role: user
+        id: 62d0e72a23a22606c37c0cf2
+        albumId: 62d0e6c923a22606c37c0ced
+        title: song1
+        year: 1999
+        genre: rock
+        performer: singer1
+        duration: 300
+
+    Playlist:
+      type: object
+      properties:
+        id: 
+          type: string
+        owner:
+          type: string
+        name:
+          type: string
+        activities:
+          type: array
+          items:
+            type: string
+        collaborators:
+          type: array
+          items:
+            type: string
+        songs:
+          type: array
+          items:
+            type: string
+
+    PlaylistActivity:
+      type: object
+      properties:
+        id:
+          type: string
+        playlist:
+          type: object
+          properties:
+            id: 
+              type: string
+            name: 
+              type: string
+        collaborator:
+          type: object
+          properties:
+            id: 
+              type: string
+            name: 
+              type: string
+        song:
+          type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+        action:
+          type: string
+          enum: [add, delete]
+        createdAt:
+          type: string
+
+
 
     Token:
       type: object
@@ -98,6 +157,7 @@ components:
           type: number
         message:
           type: string
+    
     OctetStream:
       type: string
       format: binary
@@ -149,6 +209,28 @@ components:
           type: number
       example:
         year: 2020
+    
+    SongId:
+      type: object
+      required:
+        - songId
+      properties:
+        songId:
+          description: mongodb object id
+          type: string
+          pattern: /^[a-f\d]{}24$/i
+          example: 62d0e72a23a22606c37c0c02
+
+    CollaboratorId:
+      type: object
+      required:
+        - collaboratorId
+      properties:
+        collaboratorId:
+          description: mongodb object id
+          type: string
+          pattern: /^[a-f\d]{}24$/i
+          example: 62d0e72a23a22606c37c0c02
 
   responses:
     AlbumDetail:
@@ -201,15 +283,25 @@ components:
           example:
             code: 500
             message: "Internal Server Error"
-    InvalidRequest:
-      description: Invalid request
+    
+    InvalidRequestEmptyName:
+      description: Invalid request empty name
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-          example:
-            code: 400
-            message: "year must be a number"
+          examples:
+            Empty Name:
+              $ref: '#/components/examples/EmptyName'
+    InvalidRequestId:
+      description: Invalid id
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Invalid Id:
+              $ref: '#/components/examples/InvalidId'
     DuplicateEmail:
       description: Email already taken
       content:
@@ -261,6 +353,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  
   parameters:
     AlbumIdParam:
       name: id
@@ -269,4 +362,115 @@ components:
       description: Album id
       schema:
         type: string
-      
+
+    SongIdParam:
+      name: id
+      in: path
+      required: true
+      description: Song id
+      schema:
+        type: string
+
+    PlaylistIdParam:
+      name: id
+      in: path
+      required: true
+      description: Playlist id
+      schema:
+        type: string
+
+  examples:
+    NewPlaylist:
+      value:
+        collaborators:
+          - 62be9e9325281708b657d9b6
+        songs: []
+        activities: []
+        name: playlist1
+        owner: 62be9e9325281708b657d9b6
+        id: 62d0e7c723a22606c37c0d01
+    
+    PopulatedPlaylist:
+      collaborators:
+        - 62be9e9325281708b657d9b6
+      songs:
+        - 62d0e72a23a22606c37c0cf2
+      activities:
+        - 632400d2d16fcd8daaab6e58
+      name: playlist1
+      owner: 62be9e9325281708b657d9b6
+      id: 62d0e7c723a22606c37c0d01
+
+    PopulatedPlaylist2:
+      value:
+        collaborators:
+          - 62be9e9325281708b657d9b6
+        songs:
+          - 62d0e72a23a22606c37c0cf2
+        activities:
+          - 632400d2d16fcd8daaab6e58
+        name: playlist1
+        owner: 62be9e9325281708b657d9b6
+        id: 62d0e7c723a22606c37c0d01
+
+    PopulatedPlaylistDeleteSong:
+      value:
+        collaborators:
+          - 62be9e9325281708b657d9b6
+        songs: []
+        activities:
+          - 632400d2d16fcd8daaab6e58
+          - 6324398f2871f797683edc8c
+        name: playlist1
+        owner: 62be9e9325281708b657d9b6
+        id: 62d0e7c723a22606c37c0d01
+
+    PopulatedPlaylistAddCollaborator:
+      value:
+        collaborators:
+          - 62be9e9325281708b657d9b6
+          - 62c7fc6b8780e8338cca9cb4
+        songs: []
+        activities: []
+        name: playlist1
+        owner: 62be9e9325281708b657d9b6
+        id: 62d0e7c723a22606c37c0d01
+
+    PlaylistActivity1:
+      playlist:
+        name: Playlist 2
+        id: 6323fc6e2c53b787a94bd665
+      collaborator:
+        name: user1
+        id: 62be9e9325281708b657d9b6
+      song: 
+        title: song1
+        id: 62d0e72a23a22606c37c0cf2
+      action: add
+      createdAt: "2022-09-17T07:37:13.160Z"
+      id: 63257929527670d100fe01c0
+
+    PlaylistActivity2:
+      playlist:
+        name: Playlist 2
+        id: 6323fc6e2c53b787a94bd665
+      collaborator:
+        name: user1
+        id: 62be9e9325281708b657d9b6
+      song: 
+        title: song2
+        id: 62d0e73223a22606c37c0cf6
+      action: add
+      createdAt: "2022-09-17T07:41:33.002Z"
+      id: 63257a2c5175512d033e2079
+
+    EmptyName:
+      value:
+        code: 400
+        message: name is not allowed to be empty
+    
+    InvalidId:
+      value:
+        code: 400
+        message: must be a valid id
+

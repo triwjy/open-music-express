@@ -1,6 +1,6 @@
 {
   "name": "open-music",
-  "version": "1.0",
+  "version": "1.0.0",
   "author": "triwjy",
   "main": "src/index.js",
   "license": "MIT",

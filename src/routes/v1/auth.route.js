@@ -94,9 +94,15 @@ module.exports = router;
  *               password:
  *                 type: string
  *                 format: password
- *             example:
- *               email: admin1@admin.com
- *               password: password1
+ *           examples:
+ *             Admin:
+ *               value:
+ *                 email: admin1@admin.com
+ *                 password: password1
+ *             User:
+ *               value:
+ *                 email: user1@user.com
+ *                 password: password1
  *     responses:
  *       "200":
  *         description: OK
@@ -267,7 +273,7 @@ module.exports = router;
  * @swagger
  * /auth/verify-email:
  *   post:
- *     summary: verify email
+ *     summary: Verify email
  *     tags: [Auth]
  *     parameters:
  *       - in: query
