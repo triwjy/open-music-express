@@ -241,7 +241,7 @@ describe('Playlist routes', () => {
         .post(`/v1/playlists/${playlistOne._id}/songs`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send({ songId: songOne._id })
-        .expect(httpStatus.CREATED);
+        .expect(httpStatus.OK);
 
       const res = await request(app)
         .get(`/v1/playlists/${playlistOne._id}/songs`)
@@ -365,7 +365,7 @@ describe('Playlist routes', () => {
         .post(`/v1/playlists/${playlistOne._id}/songs`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send({ songId: songOne._id })
-        .expect(httpStatus.CREATED);
+        .expect(httpStatus.OK);
     });
     test('should return 200 if data is ok', async () => {
       let dbPlaylist = await Playlist.findById(playlistOne._id);
@@ -579,7 +579,7 @@ describe('Playlist routes', () => {
         .post(`/v1/playlists/${playlistId}/songs`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send({ songId })
-        .expect(httpStatus.CREATED);
+        .expect(httpStatus.OK);
     };
     const deleteSong = async (songId, playlistId) => {
       await request(app)
@@ -611,6 +611,7 @@ describe('Playlist routes', () => {
             name: userOne.name,
             id: userOne._id.toHexString(),
           },
+          createdAt: expect.anything(),
           song: {
             title: songOne.title,
             id: songOne._id.toHexString(),
@@ -627,6 +628,7 @@ describe('Playlist routes', () => {
             name: userOne.name,
             id: userOne._id.toHexString(),
           },
+          createdAt: expect.anything(),
           song: {
             title: songTwo.title,
             id: songTwo._id.toHexString(),
@@ -643,6 +645,7 @@ describe('Playlist routes', () => {
             name: userOne.name,
             id: userOne._id.toHexString(),
           },
+          createdAt: expect.anything(),
           song: {
             title: songOne.title,
             id: songOne._id.toHexString(),
@@ -696,6 +699,7 @@ describe('Playlist routes', () => {
               name: userOne.name,
               id: userOne._id.toHexString(),
             },
+            createdAt: expect.anything(),
             song: {
               title: songOne.title,
               id: songOne._id.toHexString(),
@@ -712,6 +716,7 @@ describe('Playlist routes', () => {
               name: userOne.name,
               id: userOne._id.toHexString(),
             },
+            createdAt: expect.anything(),
             song: {
               title: songTwo.title,
               id: songTwo._id.toHexString(),
