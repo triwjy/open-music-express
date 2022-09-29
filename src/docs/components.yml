@@ -348,6 +348,16 @@ components:
             code: 404
             message: Not found
 
+    TooManyFailedRequest:
+      description: Too many failed request from the same IP
+      content: 
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 429
+            message: 'Too many request from this IP: ::1'
+
   securitySchemes:
     bearerAuth:
       type: http
@@ -473,4 +483,3 @@ components:
       value:
         code: 400
         message: must be a valid id
-

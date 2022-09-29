@@ -69,10 +69,5 @@
     "nodemon": "^2.0.0",
     "prettier": "^2.0.5",
     "supertest": "^6.0.1"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm test"
-    }
   }
 }

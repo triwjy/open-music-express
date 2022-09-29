@@ -70,6 +70,8 @@ module.exports = router;
  *                   $ref: '#/components/schemas/AuthTokens'
  *       "400":
  *         $ref: '#/components/responses/DuplicateEmail'
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -124,6 +126,8 @@ module.exports = router;
  *             example:
  *               code: 401
  *               message: Invalid email or password
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -150,6 +154,8 @@ module.exports = router;
  *         description: No content
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -180,6 +186,8 @@ module.exports = router;
  *               $ref: '#/components/schemas/AuthTokens'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -208,6 +216,8 @@ module.exports = router;
  *         description: No content
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -251,6 +261,8 @@ module.exports = router;
  *             example:
  *               code: 401
  *               message: Password reset failed
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -267,6 +279,8 @@ module.exports = router;
  *         description: No content
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
  */
 
 /**
@@ -294,4 +308,7 @@ module.exports = router;
  *             example:
  *               code: 401
  *               message: verify email failed
+ *       "429":
+ *         $ref: '#/components/responses/TooManyFailedRequest'
+ *
  */
