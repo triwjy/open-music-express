@@ -1,53 +1,88 @@
 # Open Music - Express
 
-> Express-MongoDB version of [Open Music - Hapi-PostgreSQL](https://github.com/triwjy/open-music) with slightly different specification and features.
+[Open Music - Hapi-PostgreSQL](https://github.com/triwjy/open-music) with slightly different specification and features. This REST API project is built using Node.js, Express, Mongoose, redis (for cache), amqplib (for asynchronous communication using AMQP).
 
-## Services:
+## API Endpoints:
 
-> ### Authentication
+---
 
-> Service that handles access token and refresh token.  
-> Routes that require authentication will require JWT access token in the **Authorization** request header with **Bearer** schema.  
-> Access token (and refresh token) will be generated upon successful call to `POST /v1/auth/register` or `POST /v1/auth/login`.  
-> Access token will valid for 30 minutes while refresh token will valid for 30 days.  
-> To generate new acess token, refresh token endpoint `POST /v1/auth/refresh-tokens` needs to be called along with sending the refresh token in the request body. This call will return new access token and refresh token.  
-> Rate limiter of 20 calls in 15 minutes for each IP is applied on `/v1/auth/` routes in **production environment** to prevent brute-force attack.
+Detailed API specifications (using **swagger**) can be viewed by running the app in development environment and opening `http://localhost:5000/v1/docs` from your browser.
 
-> ### Authorization
+### Album routes
 
-> ### User
+`POST /v1/albums` - create new album\
+`GET /v1/albums` - get all albums (use pagination)\
+`GET /v1/albums/:albumId` - get album detailed information\
+`PATCH /v1/albums/:albumId` - modify album information\
+`DELETE /v1/albums/:albumId` - delete an album\
+`POST /v1/albums/likes/:albumId` - toggle like/unlike an album\
+`GET /v1/albums/likes/:albumId` - get number of likes of an album\
+`POST /v1/albums/albumCover/:albumId` - upload album cover image
 
-```
-  Service that handles user registration and login.
-```
+Album routes handle all requests that's related to album resource. Only admin can modify the album resource.
 
-> ### Album
+All users can view the album and toggle album **likes**. Number of **album likes** is cached (server-side cache) by using Redis for 30 minute and will return custom header property `X-Data-Source` with value `cache`. Cache will be removed whenever the number of particular album likes is changed.
 
-Service that handles album resource.  
-Album can only be created, edited, and deleted by Admin role.  
-Album and Song can be associated each other.  
-Any role can view Album.
+### Authentication routes
 
-GET /albums/{albumId} will show details of associated Song.  
-GET /albums support query parameters: ?name, ?year, ?sortBy, ?limit, ?page (see swagger UI documentation for details).s
+---
 
-> ### Playlist
+`POST /v1/auth/register` - register\
+`POST /v1/auth/login` - login\
+`POST /v1/auth/logout` - logout\
+`POST /v1/auth/refresh-tokens` - generate new access and refresh tokens\
+`POST /v1/auth/forgot-password` - send reset password email\
+`POST /v1/auth/reset-password` - reset password\
+`POST /v1/auth/send-verification-email` - send verification email\
+`POST /v1/auth/verify-email` - verify email\
 
-```
-  Service that handles playlist resource
-```
+Service that handles access token and refresh token. Routes that require authentication will require JWT access token in the **Authorization** request header with **Bearer** schema.
 
-> ### Song
+Access token (and refresh token) will be generated upon successful call to **register** or **login** endpoint. **Access token** will valid for 30 minutes while **refresh token** will valid for 30 days.
 
-```
-Service that handles song resource.
-Song can only be created, edited, and deleted by Admin role.
-Song and album can be  associated each other.
-Any role can view Song.
+To generate new acess token, **refresh token endpoint** needs to be called along with sending the refresh token in the request body. This call will return new access token and refresh token.
 
-```
+Rate limiter of 20 calls in 15 minutes for each IP is applied on **authentication routes** in **production environment** to prevent brute-force attack.
+
+### Export routes
+
+---
+
+`POST /v1/exports/playlists/:playlistId` - export playlist by email.
+
+Service that handles the export of resources (currently only playlist). This service uses message broker (RabbitMQ) with AMQP as asynchronous communication method. Another client (message consumer) will receive the message and do the actual export job.
+
+### Playlist routes
+
+---
+
+`POST /v1/playlists` - create new playlist\
+`GET /v1/playlists` - get all playlists that are associated to user\
+`DELETE /v1/playlists/:playlistId` - delete a playlist\
+`POST /v1/playlists/:playlistId/songs` - add new song to a playlist\
+`GET /v1/playlists/:playlistId/songs` - show all songs of a playlist\
+`DELETE /v1/playlists/:playlistId/songs` - remove a song from a playlist\
+`POST /v1/playlists/:playlistId/collaborations` - add a collaborator to a playlist\
+`DELETE /v1/playlists/:playlistId/collaborations` - remove a collaborator from a playlist\
+`GET /v1/playlists/:playlistId/activities` - show activity log of a playlist\
+
+Service that handles playlist resource. Playlist can be created and deleted by authenticated user (creator). Playlist creator can add other user as collaborator to edit playlist or remove collaborator. Only associated user (creator and collaborator) can view and edit playlist (add or remove song). Editing history on playlist will be recorded in playlist activities. Only playlist creator can view activities on playlist.
+
+### Song routes
+
+---
+
+`POST /v1/songs` - add new song\
+`GET /v1/songs` - get all songs with query parameters\
+`GET /v1/songs/:songId` - get a detailed song information\
+`PATCH /v1/songs/:songId` - edit a song\
+`DELETE /v1/songs/:songId` - delete a song\
+
+Service that handles song resource. Song can be viewed by anyone. Song can only be created, edited, and deleted by Admin role. Song and album can be associated each other.
 
 ## Features:
+
+---
 
 - ### Documentation: Swagger endpoint at /v1/docs
 
@@ -55,12 +90,12 @@ Any role can view Song.
 
 - ### Validation on query parameter and request body with Joi
 
-- ### Centralized error handling mechanism
+- ### Centralized error handling mechanism on controller, uniform format on API error message.
 
-- ### Authentication and Authorization: with Passport
+- ### User registration and authentication with JWT token.
 
-- ### Caching: Cache the number of **album likes** with Redis
+- ### Caching: Server-side cache the number of **album likes** with Redis on GET request, cache is cleared when modified.
 
 - ### Asynchronous Messaging: Use RabbitMQ as message broker to playlist consumer to export playlist to user email.
 
-- ### Image upload with multer
+- ### Album cover image upload with multer
