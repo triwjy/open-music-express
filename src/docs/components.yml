@@ -74,6 +74,12 @@ components:
         performer: singer1
         duration: 300
 
+    Export:
+      type: object
+      properties:
+        message:
+          type: string
+
     Playlist:
       type: object
       properties:
@@ -389,7 +395,19 @@ components:
       schema:
         type: string
 
+    ExportIdParam:
+      name: id
+      in: path
+      required: true
+      description: Playlist id
+      schema:
+        type: string
+
   examples:
+    PlaylistExported:
+      value:
+        message: Export playlist request is in queue
+
     NewPlaylist:
       value:
         collaborators:

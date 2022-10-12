@@ -22,6 +22,10 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
+// sanitize request data
+app.use(xss());
+app.use(mongoSanitize());
+
 // serve upload cover album
 app.use('/', express.static(path.join(__dirname, '/public')));
 
@@ -33,10 +37,6 @@ app.use(express.json());
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
-
-// sanitize request data
-app.use(xss());
-app.use(mongoSanitize());
 
 // gzip compression
 app.use(compression());

@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  open-music:
+    container_name: open-music-dev
+    command: npm run dev -L
+  open-music-export-consumer:
+    restart: always
+    container_name: open-music-export-consumer
+    command: npm start

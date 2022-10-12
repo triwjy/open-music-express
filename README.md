@@ -1,6 +1,36 @@
 # Open Music - Express
 
-[Open Music - Hapi-PostgreSQL](https://github.com/triwjy/open-music) with slightly different specification and features. This REST API project is built using Node.js, Express, Mongoose, redis (for cache), amqplib (for asynchronous communication using AMQP).
+Rewritten from [Open Music - Hapi-PostgreSQL](https://github.com/triwjy/open-music) with slightly different specification and features. This REST API project is built using Node.js, Express, Mongoose, redis (for cache), amqplib (for asynchronous communication using AMQP between producer and consumer).
+
+## Quick Start
+
+```bash
+git clone https://github.com/triwjy/open-music-express.git
+```
+
+Since the main app has dependency on other components (Redis, mongodb, rabbitmq, and export service consumer), the simplest way is to use Docker.
+
+Running in development environment:
+
+```bash
+npm run docker:dev
+```
+
+Running in production environment:
+
+```bash
+npm run docker:prod
+```
+
+Test:
+
+```bash
+npm run docker:test
+```
+
+RabbitMQ management: http://localhost:15672
+
+username & password: guest
 
 ## API Endpoints:
 
@@ -42,7 +72,7 @@ Access token (and refresh token) will be generated upon successful call to **reg
 
 To generate new acess token, **refresh token endpoint** needs to be called along with sending the refresh token in the request body. This call will return new access token and refresh token.
 
-Rate limiter of 20 calls in 15 minutes for each IP is applied on **authentication routes** in **production environment** to prevent brute-force attack.
+Rate limiter of 20 calls in 15 minutes for each IP is applied on **authentication routes** in **production environment** (`npm start` or usind docker: `npm run docker:prod`) to prevent brute-force attack.
 
 ### Export routes
 
@@ -84,11 +114,11 @@ Service that handles song resource. Song can be viewed by anyone. Song can only 
 
 ---
 
-- ### Documentation: Swagger endpoint at /v1/docs
+- ### Documentation: Swagger endpoint at /v1/docs, only available in development environment: `npm run dev` or using docker: `npm run docker:dev`
 
-- ### Tests that can also serve as documentation for the API behavior. Run test: `npm test`
+- ### Tests that can also serve as documentation for the API behavior. Run test: `npm test` or using docker: `npm run docker:test`
 
-- ### Validation on query parameter and request body with Joi
+- ### Validation on query parameter and request body with Joi to sanitize request, multer file type validation (also reject untrusted .svg) to prevent XSS and code injection
 
 - ### Centralized error handling mechanism on controller, uniform format on API error message.
 

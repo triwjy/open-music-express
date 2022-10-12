@@ -1,32 +1,69 @@
 version: '3'
 
 services:
-  node-app:
+  open-music:
     build: .
-    image: node-app
+    image: open-music-express
     environment:
+      - PORT=5000
       - MONGODB_URL=mongodb://mongodb:27017/open_music
+      - BASE_URL=http://localhost:5000
+      - RABBITMQ_SERVER=amqp://rabbitmq
+      - REDIS_SERVER=redis://redis:6379
+      - JWT_SECRET=thisisasamplesecret
+      - JWT_ACCESS_EXPIRATION_MINUTES=30
+      - JWT_REFRESH_EXPIRATION_DAYS=30
+      - JWT_RESET_PASSWORD_EXPIRATION_MINUTES=10
+      - JWT_VERIFY_EMAIL_EXPIRATION_MINUTES=10
+      - SMTP_HOST=smtp.ethereal.email
+      - SMTP_PORT=587
+      - SMTP_USERNAME=mailUsername
+      - SMTP_PASSWORD=mailPassword
+      - EMAIL_FROM=service@openMusic.com
     ports:
-      - '3000:3000'
+      - '5000:5000'
     depends_on:
       - mongodb
+      - redis
+      - rabbitmq
+      - open-music-export-consumer
     volumes:
-      - .:/usr/src/node-app
-    networks:
-      - node-network
+      - .:/usr/src/open-music
 
   mongodb:
-    image: mongo:4.2.1-bionic
+    image: mongo:3.6.8
     ports:
       - '27017:27017'
     volumes:
       - dbdata:/data/db
-    networks:
-      - node-network
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  rabbitmq:
+    image: rabbitmq:3.10.6-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  open-music-export-consumer:
+    build: https://github.com/triwjy/open-music-express-export.git#main
+    image: open-music-export-consumer
+    ports:
+      - '3000:3000'
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/open_music
+      - RABBITMQ_SERVER=amqp://rabbitmq
+      - SMTP_HOST=smtp.mailtrap.io
+      - SMTP_PORT=2525
+      - SMTP_USERNAME=mailUsername
+      - SMTP_PASSWORD=mailPassword
+      - EMAIL_FROM=service@openMusic.com
+    depends_on:
+      - mongodb
+      - rabbitmq
 
 volumes:
   dbdata:
-
-networks:
-  node-network:
-    driver: bridge
