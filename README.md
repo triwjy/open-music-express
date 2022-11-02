@@ -2,6 +2,10 @@
 
 Rewritten from [Open Music - Hapi-PostgreSQL](https://github.com/triwjy/openMusic) with slightly different specification and features. This REST API project is built using Node.js, Express, Mongoose, redis (for cache), amqplib (for asynchronous communication using AMQP between producer and consumer).
 
+## Architecture:
+
+![Alt text](doc/images/architecture.png?raw=true 'Architecture')
+
 ## Quick Start
 
 ```bash
